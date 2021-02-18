@@ -1,0 +1,23 @@
+Package: CreateSpells
+Type: Package
+Title: Create Spells
+Version: 0.1.0
+Author: ARS
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: CreateSpells takes as input a dataset with multiple time windows per unit of observation.
+  Multiple categories of time windows may be recorded per unit, and time windows of the same unit may overlap,
+  even within the same category.
+  The purpose of the function is creating a dataset where the time windows of the each person and category are disjoint
+  (a time window which is disjoint form the others is called spell).
+  Additionally, a category  '_overall' is added, where time windows are processed regardless of their category.
+  As an option, overlap of pairs of categories are also processed: each pair will be associated to spells where both values are recorded.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
+Imports: 
+    RcppAlgos,
+    dplyr,
+    dtplyr,
+    lubridate,
+    magrittr
