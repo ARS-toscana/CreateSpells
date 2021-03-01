@@ -123,6 +123,7 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
       CAT<-CAT[get(paste0("entry_spell_category_",permut[i,1])) <= get(paste0("exit_spell_category_",permut[i,2])) & get(paste0("exit_spell_category_",permut[i,1])) >= get(paste0("entry_spell_category_",permut[i,2])) | get(paste0("entry_spell_category_",permut[i,2])) < get(paste0("exit_spell_category_",permut[i,1])) & get(paste0("exit_spell_category_",permut[i,2]))>= get(paste0("entry_spell_category_",permut[i,1])),]
       vec2<-c(id,"num_spell.x", "num_spell.y")
       vec3<-c(id,"num_spell")
+
       CAT<-CAT[, entry_spell_category := max(get(paste0("entry_spell_category_",permut[i,1])), get(paste0("entry_spell_category_",permut[i,2])), na.rm = T),keyby = vec2][,exit_spell_category := min(get(paste0("exit_spell_category_",permut[i,1])), get(paste0("exit_spell_category_",permut[i,2])), na.rm = T), keyby = vec2][,category := paste0(paste0("",permut[i,1]), "_", paste0("",permut[i,2])),keyby = vec3]
 
       CAT<-CAT[!grepl("NA", category)]
