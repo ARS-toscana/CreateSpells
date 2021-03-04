@@ -16,7 +16,9 @@
 #' NOTE: Developed under R 3.6.1
 
 
-CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,overlap=F,dataset_overlap,only_overlaps=F){
+CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
+                       overlap=F, dataset_overlap, only_overlaps=F){
+
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
   if (!require("RcppAlgos")) install.packages("RcppAlgos")
@@ -34,6 +36,56 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
   }
 
   if (only_overlaps==F) {
+    .CalculateSpells(dataset, id, start_date, end_date,category, category_is_numeric, replace_missing_end_date)
+  }
+
+  #OPTIONAL SECTION REGARDING OVERLAPS
+
+  if(overlap==T){
+    export_df <-data.table()
+    dataset<-dataset[get(category)!="_overall",]
+
+    #Create the list of pairs of categories
+    permut<-comboGeneral(unique(dataset[[category]]),m=2)
+
+    #	For each pair of values A and B, create two temporary datasets
+    #vec<-c(id)
+    #dataset<-dataset[, .SD[length(unique(get(category))) > 1], keyby = vec]
+
+    for (i in 1:nrow(permut)) {
+      names_cat1<-c(id, "num_spell",paste0("entry_spell_category_",permut[i,1]),paste0("exit_spell_category_",permut[i,1]),paste0("category_",permut[i,1]))
+      cat1<-dataset[get(category) == permut[i, 1],]
+      cat1<-cat1[,paste0("entry_spell_category_",permut[i,1]) := entry_spell_category][, paste0("exit_spell_category_",permut[i,1]) := exit_spell_category][, paste0("category_",permut[i,1]) := get(category)][, ..names_cat1]
+
+      names_cat2<-c(id, "num_spell",paste0("entry_spell_category_",permut[i,2]),paste0("exit_spell_category_",permut[i,2]),paste0("category_",permut[i,2]))
+      cat2<-dataset[get(category) == permut[i, 2],]
+      cat2<-cat2[,paste0("entry_spell_category_",permut[i,2]) := entry_spell_category][,paste0("exit_spell_category_",permut[i,2]) := exit_spell_category][, paste0("category_",permut[i,2]) := get(category)][, ..names_cat2]
+
+      #	Perform a join multi-to-multi of the two datasets
+      CAT<-merge(cat1,cat2,by=c(id),all=T)
+      CAT<-CAT[, num_spell := 1]
+
+      CAT<-CAT[get(paste0("entry_spell_category_",permut[i,1])) <= get(paste0("exit_spell_category_",permut[i,2])) & get(paste0("exit_spell_category_",permut[i,1])) >= get(paste0("entry_spell_category_",permut[i,2])) | get(paste0("entry_spell_category_",permut[i,2])) < get(paste0("exit_spell_category_",permut[i,1])) & get(paste0("exit_spell_category_",permut[i,2]))>= get(paste0("entry_spell_category_",permut[i,1])),]
+      vec2<-c(id,"num_spell.x", "num_spell.y")
+      vec3<-c(id,"num_spell")
+      CAT<-CAT[, entry_spell_category := max(get(paste0("entry_spell_category_",permut[i,1])), get(paste0("entry_spell_category_",permut[i,2])), na.rm = T),keyby = vec2][,exit_spell_category := min(get(paste0("exit_spell_category_",permut[i,1])), get(paste0("exit_spell_category_",permut[i,2])), na.rm = T), keyby = vec2][,category := paste0(paste0("",permut[i,1]), "_", paste0("",permut[i,2])),keyby = vec3]
+
+      CAT<-CAT[!grepl("NA", category)]
+      variables<-c(id, "entry_spell_category", "exit_spell_category", "category")
+      CAT<-CAT[order(get(id), entry_spell_category)][, ..variables][, `:=`(num_spell = seq_along(..category)), keyby = c(id)]
+      CAT<-CAT[, num_spell := rowid(get(id))]
+
+      export_df=rbind(export_df,CAT,fill=T)
+    }
+
+    #save the second output
+    #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
+
+    assign(dataset_overlap,export_df,envir = parent.frame())
+  }
+  return(output_spells_category)
+
+  .CalculateSpells <- function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date) {
     dataset<-dataset[,(start_date) := lubridate::ymd(get(start_date))][, (end_date) := lubridate::ymd(get(end_date))]
 
     if(sum(is.na(dataset[[start_date]]))==0) print("All start dates are not missing")
@@ -92,55 +144,9 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
       dataset<-unique(dataset[, "entry_spell_category" := min(get(start_date)), by = c(id, category, "num_spell")][, "exit_spell_category" := max(get(end_date)), by = c(id, category, "num_spell")][, ..myVector])
       #
 
-    }else{  dataset<-dataset[, .(entry_spell_category = min(get(start_date)), exit_spell_category = max(get(end_date))), by = c(id, "num_spell")]
+    } else {
+      dataset<-dataset[, .(entry_spell_category = min(get(start_date)), exit_spell_category = max(get(end_date))), by = c(id, "num_spell")]
     }
-
     assign("output_spells_category", dataset)
   }
-
-  #OPTIONAL SECTION REGARDING OVERLAPS
-
-  if(overlap==T){
-    export_df <-data.table()
-    dataset<-dataset[get(category)!="_overall",]
-
-    #Create the list of pairs of categories
-    permut<-comboGeneral(unique(dataset[[category]]),m=2)
-
-    #	For each pair of values A and B, create two temporary datasets
-    #vec<-c(id)
-    #dataset<-dataset[, .SD[length(unique(get(category))) > 1], keyby = vec]
-
-    for (i in 1:nrow(permut)) {
-      names_cat1<-c(id, "num_spell",paste0("entry_spell_category_",permut[i,1]),paste0("exit_spell_category_",permut[i,1]),paste0("category_",permut[i,1]))
-      cat1<-dataset[get(category) == permut[i, 1],]
-      cat1<-cat1[,paste0("entry_spell_category_",permut[i,1]) := entry_spell_category][, paste0("exit_spell_category_",permut[i,1]) := exit_spell_category][, paste0("category_",permut[i,1]) := get(category)][, ..names_cat1]
-
-      names_cat2<-c(id, "num_spell",paste0("entry_spell_category_",permut[i,2]),paste0("exit_spell_category_",permut[i,2]),paste0("category_",permut[i,2]))
-      cat2<-dataset[get(category) == permut[i, 2],]
-      cat2<-cat2[,paste0("entry_spell_category_",permut[i,2]) := entry_spell_category][,paste0("exit_spell_category_",permut[i,2]) := exit_spell_category][, paste0("category_",permut[i,2]) := get(category)][, ..names_cat2]
-
-      #	Perform a join multi-to-multi of the two datasets
-      CAT<-merge(cat1,cat2,by=c(id),all=T)
-      CAT<-CAT[, num_spell := 1]
-
-      CAT<-CAT[get(paste0("entry_spell_category_",permut[i,1])) <= get(paste0("exit_spell_category_",permut[i,2])) & get(paste0("exit_spell_category_",permut[i,1])) >= get(paste0("entry_spell_category_",permut[i,2])) | get(paste0("entry_spell_category_",permut[i,2])) < get(paste0("exit_spell_category_",permut[i,1])) & get(paste0("exit_spell_category_",permut[i,2]))>= get(paste0("entry_spell_category_",permut[i,1])),]
-      vec2<-c(id,"num_spell.x", "num_spell.y")
-      vec3<-c(id,"num_spell")
-      CAT<-CAT[, entry_spell_category := max(get(paste0("entry_spell_category_",permut[i,1])), get(paste0("entry_spell_category_",permut[i,2])), na.rm = T),keyby = vec2][,exit_spell_category := min(get(paste0("exit_spell_category_",permut[i,1])), get(paste0("exit_spell_category_",permut[i,2])), na.rm = T), keyby = vec2][,category := paste0(paste0("",permut[i,1]), "_", paste0("",permut[i,2])),keyby = vec3]
-
-      CAT<-CAT[!grepl("NA", category)]
-      variables<-c(id, "entry_spell_category", "exit_spell_category", "category")
-      CAT<-CAT[order(get(id), entry_spell_category)][, ..variables][, `:=`(num_spell = seq_along(..category)), keyby = c(id)]
-      CAT<-CAT[, num_spell := rowid(get(id))]
-
-      export_df=rbind(export_df,CAT,fill=T)
-    }
-
-    #save the second output
-    #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
-
-    assign(dataset_overlap,export_df,envir = parent.frame())
-  }
-  return(output_spells_category)
 }
