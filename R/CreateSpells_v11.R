@@ -17,7 +17,7 @@
 #' NOTE: Developed under R 3.6.1
 
 
-CreateSpellsV12<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
+CreateSpellsV11<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
   if (!require("RcppAlgos")) install.packages("RcppAlgos")
@@ -63,13 +63,9 @@ CreateSpellsV12<-function(dataset,id,start_date,end_date,category,category_is_nu
     #group by and arrange the dataset
 
     if(!missing(category)) {
-      setorderv(dataset,c(id, category,start_date,end_date))
-      #dataset<-dataset[order(get(id), get(category), get(start_date),get(end_date))]
+      dataset<-dataset[order(get(id), get(category), get(start_date))]
 
-    }else{
-      setorderv(dataset,c(id,start_date,end_date))
-      #dataset<-dataset[order(get(id), get(start_date), get(end_date))]
-      }
+    }else{ dataset<-dataset[order(get(id), get(start_date))]}
 
     #compute the number of spell
 
