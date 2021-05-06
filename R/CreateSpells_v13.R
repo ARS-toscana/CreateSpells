@@ -17,7 +17,7 @@
 #' NOTE: Developed under R 3.6.1
 
 
-CreateSpellsV13<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,
+CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,
                           overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
@@ -76,10 +76,10 @@ CreateSpellsV13<-function(dataset,id,start_date,end_date,category,category_is_nu
 
     if (missing(category)) {
       grouping_vars <- id
-      dataset<-dataset[, `:=`(row_id = rowid(id))]
+      dataset<-dataset[, `:=`(row_id = rowid(get(id)))]
     } else {
       grouping_vars <- c(id, category)
-      dataset<-dataset[, `:=`(row_id = rowid(id, category))]
+      dataset<-dataset[, `:=`(row_id = rowid(get(id), get(category)))]
     }
 
     dataset<-dataset[, `:=`(lag_end_date = fifelse(row_id > 1, shift(get(end_date)), get(end_date)))]
@@ -115,7 +115,7 @@ CreateSpellsV13<-function(dataset,id,start_date,end_date,category,category_is_nu
     dataset <- dataset[get(category) != "_overall",]
 
     #Create the list of pairs of categories
-    permut <- comboGeneral(unique(dataset[[category]]), m = 2)
+    permut <- RcppAlgos::comboGeneral(unique(dataset[[category]]), m = 2)
 
     #	For each pair of values A and B, create two temporary datasets
     #vec<-c(id)
