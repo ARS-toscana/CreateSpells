@@ -90,7 +90,7 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
     dataset <- dataset[, `:=`(max_end_date_previous = as.Date(max_end_date_previous, "1970-01-01"))]
     # dataset<-dataset[, `:=`(max_end_date_previous = as.Date(max_end_date_previous, "1970-01-01"))]
     dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= max_end_date_previous + gap_allowed, 0, 1))]
-    dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
+    dataset <- dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
     if(!missing(category)) {

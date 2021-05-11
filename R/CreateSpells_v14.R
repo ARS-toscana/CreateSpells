@@ -120,7 +120,7 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
     #	For each pair of values A and B, create two temporary datasets
     #vec<-c(id)
     #dataset<-dataset[, .SD[length(unique(get(category))) > 1], keyby = vec]
-    for (i in seq_along(permut)) {
+    for (i in nrow(permut)) {
 
       p_1 <- permut[i, 1]
       p_2 <- permut[i, 2]
@@ -152,7 +152,7 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
                         exit_spell_category = min(get(exs_1), get(exs_2)),
                         category = paste(p_1, p_2, sep = "_"))]
       # CAT<-CAT[!grepl("NA", category)]
-      CAT <- CAT[order(get(id), entry_spell_category)][, .(id, entry_spell_category, exit_spell_category, category)]
+      CAT <- CAT[order(get(id), entry_spell_category)][, c(..id, "entry_spell_category", "exit_spell_category", "category")]
       CAT <- CAT[, num_spell := rowid(get(id))]
 
       export_df <- rbind(export_df, CAT)
