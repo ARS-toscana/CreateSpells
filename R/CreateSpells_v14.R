@@ -149,10 +149,10 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
       }
 
       CAT <- CAT[, `:=`(entry_spell_category = max(get(ens_1), get(ens_2)),
-                        exit_spell_category = min(get(exs_1), get(exs_2)),
-                        category = paste(p_1, p_2, sep = "_"))]
+                        exit_spell_category = min(get(exs_1), get(exs_2)))]
+      CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
       # CAT<-CAT[!grepl("NA", category)]
-      CAT <- CAT[order(get(id), entry_spell_category)][, c(..id, "entry_spell_category", "exit_spell_category", "category")]
+      CAT <- CAT[order(get(id), entry_spell_category)][, c(..id, "entry_spell_category", "exit_spell_category", ..category)]
       CAT <- CAT[, num_spell := rowid(get(id))]
 
       export_df <- rbind(export_df, CAT)
