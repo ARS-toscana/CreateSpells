@@ -18,7 +18,7 @@
 
 
 CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
-                       overlap=F, dataset_overlap, only_overlaps=F, gap_allowed = 1){
+                       overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
   if (!require("RcppAlgos")) install.packages("RcppAlgos")
@@ -120,7 +120,8 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     #	For each pair of values A and B, create two temporary datasets
     #vec<-c(id)
     #dataset<-dataset[, .SD[length(unique(get(category))) > 1], keyby = vec]
-    for (i in nrow(permut)) {
+
+    for (i in seq_len(nrow(permut))) {
 
       p_1 <- permut[i, 1]
       p_2 <- permut[i, 2]
