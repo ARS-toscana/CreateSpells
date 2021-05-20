@@ -63,6 +63,27 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     #filter dataset
     dataset<-dataset[get(start_date) < get(end_date)]
 
+    flag_id = F
+    flag_start_date = F
+    flag_end_date = F
+    if ("id" %in% names(dataset)) {
+      setnames(dataset, "id", "IDUNI")
+      id = "IDUNI"
+      flag_id = T
+    }
+
+    if ("start_date" %in% names(dataset)) {
+      setnames(dataset, "start_date", "first_date")
+      id = "first_date"
+      flag_start_date = T
+    }
+
+    if ("end_date" %in% names(dataset)) {
+      setnames(dataset, "end_date", "second_date")
+      id = "second_date"
+      flag_end_date = T
+    }
+
     #group by and arrange the dataset
 
     if(!missing(category)) {
@@ -106,6 +127,27 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     }
 
     assign("output_spells_category", dataset)
+  } else {
+    flag_id = F
+    flag_start_date = F
+    flag_end_date = F
+    if ("id" %in% names(dataset)) {
+      setnames(dataset, "id", "IDUNI")
+      id = "IDUNI"
+      flag_id = T
+    }
+
+    if ("start_date" %in% names(dataset)) {
+      setnames(dataset, "start_date", "first_date")
+      id = "first_date"
+      flag_start_date = T
+    }
+
+    if ("end_date" %in% names(dataset)) {
+      setnames(dataset, "end_date", "second_date")
+      id = "second_date"
+      flag_end_date = T
+    }
   }
 
   #OPTIONAL SECTION REGARDING OVERLAPS
@@ -161,8 +203,27 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
 
     #save the second output
     #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
+    if (flag_id) {
+      setnames(dataset, "IDUNI", "id")
+    }
+    if (flag_start_date) {
+      setnames(dataset, "first_date", "start_date")
+    }
+    if (flag_end_date) {
+      setnames(dataset, "second_date", "end_date")
+    }
 
     assign(dataset_overlap, export_df, envir = parent.frame())
+  }
+
+  if (flag_id) {
+    setnames(dataset, "IDUNI", "id")
+  }
+  if (flag_start_date) {
+    setnames(dataset, "first_date", "start_date")
+  }
+  if (flag_end_date) {
+    setnames(dataset, "second_date", "end_date")
   }
   if(only_overlaps==F){
     return(output_spells_category)
