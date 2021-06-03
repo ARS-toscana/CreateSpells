@@ -12,6 +12,7 @@
 #' @param replace_missing_end_date: (optional). When specified, it contains a date to replace end_date when it is missing.
 #' @param overlap: (optional) default FALSE. If TRUE, overlaps of pairs of categories are processed as well.
 #' @param dataset_overlap: (optional) if overlap TRUE, the name of the file containing the overlap dataset
+#' @param only_overlaps: (optional) if only_overlaps TRUE, skip the calculation the spells
 #' @param gap_allowed:
 #'
 #' NOTE: Developed under R 3.6.1
@@ -37,6 +38,27 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
       stop("The overlaps can not be computed as the dataset has only one category")
   }
 
+  flag_id = F
+  flag_start_date = F
+  flag_end_date = F
+  if ("id" %in% names(dataset)) {
+    setnames(dataset, "id", "IDUNI")
+    id = "IDUNI"
+    flag_id = T
+  }
+
+  if ("start_date" %in% names(dataset)) {
+    setnames(dataset, "start_date", "first_date")
+    start_date = "first_date"
+    flag_start_date = T
+  }
+
+  if ("end_date" %in% names(dataset)) {
+    setnames(dataset, "end_date", "second_date")
+    end_date = "second_date"
+    flag_end_date = T
+  }
+
   if (only_overlaps==F) {
     dataset<-dataset[,(start_date) := lubridate::ymd(get(start_date))][, (end_date) := lubridate::ymd(get(end_date))]
 
@@ -47,52 +69,33 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
       if(!missing(replace_missing_end_date)) {
         print(paste0("Replacing missing end date with ",ymd(replace_missing_end_date)))
         dataset<-dataset[is.na(get(end_date)), (end_date) := ymd(replace_missing_end_date)]
+      } else {
+        stop ("Plase specify the replace_missing_end_date parameter")
       }
+      # NOTE maybe add else
     }
+
+    #filter dataset
+    dataset<-dataset[get(start_date) < get(end_date)]
 
     #add level overall if category is given as input and has more than 1 category
     if (!missing(category)){
       if(length(unique(dataset[[category]]))>1) {
         tmp<-as.data.table(dataset)
         tmp[[category]]<-c("_overall")
-        dataset<-suppressWarnings(bind_rows(dataset,tmp))
+        dataset<-suppressWarnings(bind_rows(dataset, tmp))
         print("The level overall is added as the is more then one category")
       }
     }
 
-    #filter dataset
-    dataset<-dataset[get(start_date) < get(end_date)]
-
-    flag_id = F
-    flag_start_date = F
-    flag_end_date = F
-    if ("id" %in% names(dataset)) {
-      setnames(dataset, "id", "IDUNI")
-      id = "IDUNI"
-      flag_id = T
-    }
-
-    if ("start_date" %in% names(dataset)) {
-      setnames(dataset, "start_date", "first_date")
-      id = "first_date"
-      flag_start_date = T
-    }
-
-    if ("end_date" %in% names(dataset)) {
-      setnames(dataset, "end_date", "second_date")
-      id = "second_date"
-      flag_end_date = T
-    }
-
     #group by and arrange the dataset
-
     if(!missing(category)) {
-      dataset<-dataset[order(get(id), get(category), get(start_date),get(end_date))]
-
-    }else{ dataset<-dataset[order(get(id), get(start_date), get(end_date))]}
+      dataset<-dataset[order(get(id), get(category), get(start_date), get(end_date))]
+    } else {
+      dataset<-dataset[order(get(id), get(start_date), get(end_date))]
+    }
 
     #compute the number of spell
-
     year_1900 <- as.Date(ymd(19000101))
 
     if (missing(category)) {
@@ -104,13 +107,10 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     }
 
     dataset<-dataset[, `:=`(lag_end_date = fifelse(row_id > 1, shift(get(end_date)), get(end_date)))]
-    dataset<-dataset[, `:=`(max_end_date_previous = as.integer(lag_end_date))]
-    dataset<-dataset[, `:=`(numeric_end_date = as.integer(get(end_date)))]
-    dataset<-dataset[row_id == 1, num_spell := 1]
-    dataset<-dataset[, `:=`(max_end_date_previous = cummax(max_end_date_previous)), by = grouping_vars]
-    dataset <- dataset[, `:=`(max_end_date_previous = as.Date(max_end_date_previous, "1970-01-01"))]
-    # dataset<-dataset[, `:=`(max_end_date_previous = as.Date(max_end_date_previous, "1970-01-01"))]
-    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= max_end_date_previous + gap_allowed, 0, 1))]
+    dataset<-dataset[, `:=`(lag_end_date = as.integer(lag_end_date))]
+    dataset<-dataset[, `:=`(lag_end_date = cummax(lag_end_date)), by = grouping_vars]
+    dataset <- dataset[, `:=`(lag_end_date = as.Date(lag_end_date, "1970-01-01"))]
+    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= lag_end_date, 0, 1))]
     dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
@@ -127,27 +127,6 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     }
 
     assign("output_spells_category", dataset)
-  } else {
-    flag_id = F
-    flag_start_date = F
-    flag_end_date = F
-    if ("id" %in% names(dataset)) {
-      setnames(dataset, "id", "IDUNI")
-      id = "IDUNI"
-      flag_id = T
-    }
-
-    if ("start_date" %in% names(dataset)) {
-      setnames(dataset, "start_date", "first_date")
-      id = "first_date"
-      flag_start_date = T
-    }
-
-    if ("end_date" %in% names(dataset)) {
-      setnames(dataset, "end_date", "second_date")
-      id = "second_date"
-      flag_end_date = T
-    }
   }
 
   #OPTIONAL SECTION REGARDING OVERLAPS
@@ -177,14 +156,14 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
       ens_2 <- paste0("entry_spell_category_", p_2)
       exs_2 <- paste0("exit_spell_category_", p_2)
 
-      cat1 <- dataset[get(category) == p_1, ][, c("num_spell", category) := NULL]
-      setnames(cat1, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
+      outputA <- dataset[get(category) == p_1, ][, c("num_spell", category) := NULL]
+      setnames(outputA, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
 
-      cat2 <- dataset[get(category) == p_2, ][, c("num_spell", category) := NULL]
-      setnames(cat2, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
+      outputB <- dataset[get(category) == p_2, ][, c("num_spell", category) := NULL]
+      setnames(outputB, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
       #	Perform a join multi-to-multi of the two datasets
 
-      CAT <- merge(cat1, cat2, by = c(id), all = T)
+      CAT <- merge(outputA, outputB, by = c(id), all = T)
       CAT <- CAT[(get(ens_1) <= get(exs_2) & get(exs_1) >= get(ens_2)) | (get(ens_2) < get(exs_1) & get(exs_2) >= get(ens_1)), ]
 
       if (dim(CAT)[1] == 0) {
