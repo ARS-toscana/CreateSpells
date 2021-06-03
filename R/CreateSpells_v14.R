@@ -20,16 +20,6 @@
 
 CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
                        overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
-  if (!require("dplyr")) install.packages("dplyr")
-  library(dplyr)
-  if (!require("RcppAlgos")) install.packages("RcppAlgos")
-  library(RcppAlgos)
-  if (!require("magrittr")) install.packages("magrittr")
-  library(magrittr)
-  if (!require("lubridate")) install.packages("lubridate")
-  library(lubridate)
-  if (!require("dtplyr")) install.packages("dtplyr")
-  library(dtplyr)
   if (!require("data.table")) install.packages("data.table")
   library(data.table)
 
@@ -67,8 +57,8 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     if(sum(is.na(dataset[[end_date]]))==0){print("All end dates are not missing")}
     else {print("Some end date are missing")
       if(!missing(replace_missing_end_date)) {
-        print(paste0("Replacing missing end date with ",ymd(replace_missing_end_date)))
-        dataset<-dataset[is.na(get(end_date)), (end_date) := ymd(replace_missing_end_date)]
+        print(paste0("Replacing missing end date with ", lubridate::ymd(replace_missing_end_date)))
+        dataset<-dataset[is.na(get(end_date)), (end_date) := lubridate::ymd(replace_missing_end_date)]
       } else {
         stop ("Plase specify the replace_missing_end_date parameter")
       }
@@ -83,7 +73,7 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
       if(length(unique(dataset[[category]]))>1) {
         tmp<-as.data.table(dataset)
         tmp[[category]]<-c("_overall")
-        dataset<-suppressWarnings(bind_rows(dataset, tmp))
+        dataset <- rbindlist(list(dataset, tmp))
         print("The level overall is added as the is more then one category")
       }
     }
@@ -96,7 +86,7 @@ CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_
     }
 
     #compute the number of spell
-    year_1900 <- as.Date(ymd(19000101))
+    year_1900 <- as.Date(lubridate::ymd(19000101))
 
     if (missing(category)) {
       grouping_vars <- id
