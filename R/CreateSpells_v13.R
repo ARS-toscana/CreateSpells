@@ -17,7 +17,7 @@
 #' NOTE: Developed under R 3.6.1
 
 
-CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,
+CreateSpellsV13<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,
                           overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
