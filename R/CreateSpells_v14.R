@@ -8,17 +8,16 @@
 #' @param start_date variable containing the start date (the date must me ordered as Year Month Day)
 #' @param end_date variable containing the end date (the date must me ordered as Year Month Day)
 #' @param category (optional) categorical variable
-#' @param category_is_numeric (optional) default FALSE. If  TRUE, the variable category is integer.
 #' @param replace_missing_end_date: (optional). When specified, it contains a date to replace end_date when it is missing.
 #' @param overlap: (optional) default FALSE. If TRUE, overlaps of pairs of categories are processed as well.
 #' @param dataset_overlap: (optional) if overlap TRUE, the name of the file containing the overlap dataset
 #' @param only_overlaps: (optional) if only_overlaps TRUE, skip the calculation the spells
 #' @param gap_allowed:
 #'
-#' NOTE: Developed under R 3.6.1
+#' NOTE: Developed under R  4.0.3
 
 
-CreateSpells<-function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
+CreateSpells <- function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
                        overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
   if (!require("data.table")) install.packages("data.table")
   library(data.table)
