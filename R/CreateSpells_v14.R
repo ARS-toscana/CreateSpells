@@ -19,12 +19,18 @@
 
 CreateSpells <- function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
                        overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
+
+  p <- progressr::progressor(8, message = paste0("Checks"))
+
   if (!require("data.table")) install.packages("data.table")
   library(data.table)
 
   if(overlap==T){
     if (length(unique(dataset[[category]]))<=1)
       stop("The overlaps can not be computed as the dataset has only one category")
+
+    #Create the list of pairs of categories
+    permut <- RcppAlgos::comboGeneral(unique(dataset[[category]]), m = 2)
   }
 
   flag_id = F
@@ -49,6 +55,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
   }
 
   if (only_overlaps==F) {
+    p(message = "Transforming dates")
     dataset<-dataset[,(start_date) := lubridate::ymd(get(start_date))][, (end_date) := lubridate::ymd(get(end_date))]
 
     if(sum(is.na(dataset[[start_date]]))==0) print("All start dates are not missing")
@@ -65,9 +72,11 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     }
 
     #filter dataset
+    p(message = "Remove incorrect periods")
     dataset<-dataset[get(start_date) < get(end_date)]
 
     #add level overall if category is given as input and has more than 1 category
+    p(message = "Category 'overall' creation")
     if (!missing(category)){
       if(length(unique(dataset[[category]]))>1) {
         tmp<-as.data.table(dataset)
@@ -78,6 +87,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
       }
     }
 
+    p(message = "Ordering")
     #group by and arrange the dataset
     if(!missing(category)) {
       setorderv(dataset, c(id, category, start_date, end_date))
@@ -88,6 +98,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     #compute the number of spell
     year_1900 <- as.Date(lubridate::ymd(19000101))
 
+    p(message = "Create spell column")
     if (missing(category)) {
       grouping_vars <- id
       dataset<-dataset[, `:=`(row_id = rowid(get(id)))]
@@ -104,6 +115,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
+    p(message = "Find start and end of spells")
     if(!missing(category)) {
       # dataset<-dataset[, c(entry_spell_category := min(get(start_date)),exit_spell_category := max(get(end_date))), by = c(id, category, "num_spell")]
       # dataset<-dataset[, .(entry_spell_category = min(get(start_date)),
@@ -116,17 +128,18 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
       dataset<-unique(dataset[, .(entry_spell_category = min(get(start_date)), exit_spell_category = max(get(end_date))), by = c(id, "num_spell")][, ..myVector])
     }
 
+    p(message = "Assigning spells")
     assign("output_spells_category", dataset)
+    p(message = "Spells finished!")
   }
 
   #OPTIONAL SECTION REGARDING OVERLAPS
 
   if(overlap==T){
+    p <- progressr::progressor(nrow(permut) + 3, message = paste0("Starting overlaps"))
     export_df <-data.table()
+    p(message = "Remove 'overall' spells")
     dataset <- dataset[get(category) != "_overall",]
-
-    #Create the list of pairs of categories
-    permut <- RcppAlgos::comboGeneral(unique(dataset[[category]]), m = 2)
 
     #	For each pair of values A and B, create two temporary datasets
     #vec<-c(id)
@@ -138,8 +151,11 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
       p_2 <- permut[i, 2]
 
       if (is.na(p_1) | is.na(p_2)){
+        p(message = "Skipping missing category")
         next
       }
+
+      p(message = sprintf("Calculating %s_%s overlap", p_1, p_2))
 
       ens_1 <- paste0("entry_spell_category_", p_1)
       exs_1 <- paste0("exit_spell_category_", p_1)
@@ -172,6 +188,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
 
     #save the second output
     #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
+
     if (flag_id) {
       setnames(export_df, "IDUNI", "id")
     }
@@ -182,7 +199,9 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
       setnames(export_df, "second_date", "end_date")
     }
 
+    p(message = "Assigning")
     assign(dataset_overlap, export_df, envir = parent.frame())
+    p(message = "Finished overlaps!")
   }
 
   if (flag_id) {
