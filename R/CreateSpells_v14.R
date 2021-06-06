@@ -121,8 +121,6 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
 
   #OPTIONAL SECTION REGARDING OVERLAPS
 
-  browser()
-
   if(overlap==T){
     export_df <-data.table()
     dataset <- dataset[get(category) != "_overall",]
