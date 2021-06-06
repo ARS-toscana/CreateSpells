@@ -20,5 +20,10 @@ df_spells_calculated <- CreateSpells(
   dataset_overlap = "df_overlap_calculated"
 )
 
-all.equal(df_spells_calculated, df_spells)
-all.equal(df_overlap_calculated, df_overlap)
+if (all.equal(df_spells_calculated, df_spells)) {
+  print("Spells have been calculated correctly")
+}
+
+if (all.equal(df_overlap_calculated, df_overlap)) {
+  print("Overlaps have been calculated correctly")
+}
