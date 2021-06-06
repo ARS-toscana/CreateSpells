@@ -12,8 +12,12 @@ df_spells_calculated <- CreateSpells(
 
 if (all.equal(df_spells_calculated, df_spells)) {
   print("Spells have been calculated correctly")
+} else {
+  stop("Spells have been calculated incorrectly")
 }
 
 if (all.equal(df_overlap_calculated, df_overlap)) {
   print("Overlaps have been calculated correctly")
+} else {
+  stop("Overlaps have been calculated incorrectly")
 }

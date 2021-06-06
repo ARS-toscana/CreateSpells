@@ -79,9 +79,9 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
 
     #group by and arrange the dataset
     if(!missing(category)) {
-      dataset<-dataset[order(get(id), get(category), get(start_date), get(end_date))]
+      setorderv(dataset, c(id, category, start_date, end_date))
     } else {
-      dataset<-dataset[order(get(id), get(start_date), get(end_date))]
+      setorderv(dataset, c(id, start_date, end_date))
     }
 
     #compute the number of spell
