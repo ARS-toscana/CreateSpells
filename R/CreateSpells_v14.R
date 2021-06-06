@@ -73,6 +73,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
         tmp<-as.data.table(dataset)
         tmp[[category]]<-c("_overall")
         dataset <- rbindlist(list(dataset, tmp))
+        rm(tmp)
         print("The level overall is added as the is more then one category")
       }
     }
@@ -119,6 +120,8 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
   }
 
   #OPTIONAL SECTION REGARDING OVERLAPS
+
+  browser()
 
   if(overlap==T){
     export_df <-data.table()
@@ -172,26 +175,26 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     #save the second output
     #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
     if (flag_id) {
-      setnames(dataset, "IDUNI", "id")
+      setnames(export_df, "IDUNI", "id")
     }
     if (flag_start_date) {
-      setnames(dataset, "first_date", "start_date")
+      setnames(export_df, "first_date", "start_date")
     }
     if (flag_end_date) {
-      setnames(dataset, "second_date", "end_date")
+      setnames(export_df, "second_date", "end_date")
     }
 
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
 
   if (flag_id) {
-    setnames(dataset, "IDUNI", "id")
+    setnames(output_spells_category, "IDUNI", "id")
   }
   if (flag_start_date) {
-    setnames(dataset, "first_date", "start_date")
+    setnames(output_spells_category, "first_date", "start_date")
   }
   if (flag_end_date) {
-    setnames(dataset, "second_date", "end_date")
+    setnames(output_spells_category, "second_date", "end_date")
   }
   if(only_overlaps==F){
     return(output_spells_category)
