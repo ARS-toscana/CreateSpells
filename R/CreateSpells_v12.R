@@ -17,7 +17,7 @@
 #' NOTE: Developed under R 3.6.1
 
 
-CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
+CreateSpellsV12<-function(dataset,id,start_date,end_date,category,category_is_numeric=F,replace_missing_end_date,overlap=F,dataset_overlap,only_overlaps=F,gap_allowed){
   if (!require("dplyr")) install.packages("dplyr")
   library(dplyr)
   if (!require("RcppAlgos")) install.packages("RcppAlgos")
@@ -28,8 +28,6 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
   library(lubridate)
   if (!require("dtplyr")) install.packages("dtplyr")
   library(dtplyr)
-  if (!require("data.table")) install.packages("data.table")
-  library(data.table)
 
   if(overlap==T){
     if (length(unique(dataset[[category]]))<=1)
@@ -65,9 +63,13 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
     #group by and arrange the dataset
 
     if(!missing(category)) {
-      dataset<-dataset[order(get(id), get(category), get(start_date),get(end_date))]
+      setorderv(dataset,c(id, category,start_date,end_date))
+      #dataset<-dataset[order(get(id), get(category), get(start_date),get(end_date))]
 
-    }else{ dataset<-dataset[order(get(id), get(start_date), get(end_date))]}
+    }else{
+      setorderv(dataset,c(id,start_date,end_date))
+      #dataset<-dataset[order(get(id), get(start_date), get(end_date))]
+      }
 
     #compute the number of spell
 
@@ -76,9 +78,9 @@ CreateSpells<-function(dataset,id,start_date,end_date,category,category_is_numer
     if(!missing(category)) {
       dataset<-dataset[, `:=`(num_spell = fifelse(rowid(get(id)) == 1, 1, 0)), by = list(get(id), get(category))]
       dataset<-dataset[, `:=`(max_end_date_previous = fifelse(num_spell == 1, get(end_date), year_1900))]
-      dataset<-dataset[, max_end_date_previous := fifelse(rowid(get(id)) == 2, shift(get(end_date)), max_end_date_previous) , by = list(get(id), get(category))]
-      dataset<-dataset[, c("lag_end_date", "lag_max_end_date") := list(fifelse(rowid(get(id)) >= 3, shift(get(end_date)), year_1900),
-                                                                       fifelse(rowid(get(id)) >= 3, shift(max_end_date_previous), year_1900)), by = list(get(id), get(category))]
+      dataset<-dataset[, c("max_end_date_previous", "lag_end_date", "lag_max_end_date") := list(fifelse(rowid(get(id)) == 2, shift(get(end_date)), max_end_date_previous),
+                                                                                                fifelse(rowid(get(id)) >= 3, shift(get(end_date)), year_1900),
+                                                                                                fifelse(rowid(get(id)) >= 3, shift(max_end_date_previous), year_1900)), by = list(get(id), get(category))]
       dataset<-dataset[, `:=`(max_end_date_previous = fifelse(rowid(get(id)) >=  3, max(lag_end_date, lag_max_end_date), max_end_date_previous)), by = list(get(id), get(category))]
       dataset<-dataset[,`:=`(num_spell = fifelse(rowid(get(id)) > 1 & get(start_date) <= max_end_date_previous + gap_allowed, 0, 1)), by = list(get(id), get(category))]
       dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = list(get(id), get(category))]
