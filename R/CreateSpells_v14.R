@@ -12,7 +12,7 @@
 #' @param overlap: (optional) default FALSE. If TRUE, overlaps of pairs of categories are processed as well.
 #' @param dataset_overlap: (optional) if overlap TRUE, the name of the file containing the overlap dataset
 #' @param only_overlaps: (optional) if only_overlaps TRUE, skip the calculation the spells
-#' @param gap_allowed:
+#' @param gap_allowed: (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
 #'
 #' NOTE: Developed under R  4.0.3
 
@@ -22,7 +22,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
   if (!require("data.table")) install.packages("data.table")
   library(data.table)
 
-  if(overlap==T){
+  if(overlap == T || only_overlaps == T){
     if (length(unique(dataset[[category]]))<=1)
       stop("The overlaps can not be computed as the dataset has only one category")
   }
@@ -30,6 +30,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
   flag_id = F
   flag_start_date = F
   flag_end_date = F
+  flag_category = F
   if ("id" %in% names(dataset)) {
     setnames(dataset, "id", "IDUNI")
     id = "IDUNI"
@@ -46,6 +47,11 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     setnames(dataset, "end_date", "second_date")
     end_date = "second_date"
     flag_end_date = T
+  }
+  if ("category" %in% names(dataset)) {
+    setnames(dataset, "category", "op_meaning")
+    end_date = "op_meaning"
+    flag_category = T
   }
 
   if (only_overlaps==F) {
@@ -121,7 +127,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
 
   #OPTIONAL SECTION REGARDING OVERLAPS
 
-  if(overlap==T){
+  if(overlap == T || only_overlaps == T){
     export_df <-data.table()
     dataset <- dataset[get(category) != "_overall",]
 
@@ -181,20 +187,25 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     if (flag_end_date) {
       setnames(export_df, "second_date", "end_date")
     }
-
+    if (flag_category) {
+      setnames(export_df, "op_meaning", "category")
+    }
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
 
-  if (flag_id) {
-    setnames(output_spells_category, "IDUNI", "id")
-  }
-  if (flag_start_date) {
-    setnames(output_spells_category, "first_date", "start_date")
-  }
-  if (flag_end_date) {
-    setnames(output_spells_category, "second_date", "end_date")
-  }
-  if(only_overlaps==F){
+  if(only_overlaps == F){
+    if (flag_id) {
+      setnames(output_spells_category, "IDUNI", "id")
+    }
+    if (flag_start_date) {
+      setnames(output_spells_category, "first_date", "start_date")
+    }
+    if (flag_end_date) {
+      setnames(export_df, "second_date", "end_date")
+    }
+    if (flag_category) {
+      setnames(output_spells_category, "op_meaning", "category")
+    }
     return(output_spells_category)
   }
 }
