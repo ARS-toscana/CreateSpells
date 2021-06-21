@@ -160,7 +160,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
       #	Perform a join multi-to-multi of the two datasets
 
       CAT <- merge(outputA, outputB, by = c(id), all = T)
-      CAT <- CAT[(get(ens_1) <= get(exs_2) & get(exs_1) >= get(ens_2)) | (get(ens_2) < get(exs_1) & get(exs_2) >= get(ens_1)), ]
+      CAT <- CAT[(get(ens_1) <= get(exs_2) + gap_allowed & get(exs_1) + gap_allowed >= get(ens_2)) | (get(ens_2) < get(exs_1) + gap_allowed & get(exs_2) + gap_allowed >= get(ens_1)), ]
 
       if (dim(CAT)[1] == 0) {
         next
