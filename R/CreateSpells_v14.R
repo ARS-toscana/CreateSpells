@@ -106,7 +106,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, category_i
     dataset<-dataset[, `:=`(lag_end_date = as.integer(lag_end_date))]
     dataset<-dataset[, `:=`(lag_end_date = cummax(lag_end_date)), by = grouping_vars]
     dataset <- dataset[, `:=`(lag_end_date = as.Date(lag_end_date, "1970-01-01"))]
-    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= lag_end_date, 0, 1))]
+    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= lag_end_date + gap_allowed, 0, 1))]
     dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
