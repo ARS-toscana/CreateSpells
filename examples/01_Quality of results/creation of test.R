@@ -1,6 +1,6 @@
 create_test_df <- function() {
   temp_df <- tibble::tribble(
-    ~person_id,~op_start_date,~op_end_date,~op_meaning,                  ~comment,
+    ~id,~op_start_date,~op_end_date,~op_meaning,                  ~comment,
     #---------|--------------|------------|-----------|--------------------------|
           "a1",    "20100101",  "20200101",        "a",                  "single",
           "a2",    "20100101",  "20200101",        "a",         "partial overlap",
@@ -45,7 +45,7 @@ create_test_df <- function() {
 
 create_df_spells <- function() {
   temp_df <- tibble::tribble(
-    ~person_id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+    ~id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
     #---------|-----------|----------|---------------------|--------------------|
           "a1", "_overall",         1,           "20100101",          "20250101",
           "a1",        "a",         1,           "20100101",          "20200101",
@@ -84,7 +84,7 @@ create_df_spells <- function() {
 
 create_df_overlap <- function() {
   temp_df <- tibble::tribble(
-    ~person_id,~entry_spell_category,~exit_spell_category,~op_meaning,~num_spell,
+    ~id,~entry_spell_category,~exit_spell_category,~op_meaning,~num_spell,
     #---------|---------------------|--------------------|-----------|----------|
           "a1",           "20150101",          "20200101",      "a_b",         1,
           "a2",           "20120101",          "20200101",      "a_b",         1,

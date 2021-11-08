@@ -10,13 +10,12 @@ generated_meanings <- sample(as.character(seq_len(n_meanings)), row_to_gen, repl
 generated_origins <- sample(as.character(seq_len(n_origins)), row_to_gen, replace = T)
 
 test_df <- data.table(person_id = generate_ids,
-                      op_start_date = generated_dates,
+                      op_start_date = format(generated_dates, "%Y%m%d"),
                       op_end_date = generated_dates + generated_integers,
                       op_meaning = generated_meanings,
                       op_origin = generated_origins)
 
 rm(row_to_gen, seq_id, generate_ids, generated_dates, generated_integers, generated_meanings, generated_origins)
-
 
 print(system.time(CreateSpells(
   dataset = test_df,

@@ -1,12 +1,27 @@
+library(data.table)
+
+source("R/CreateSpells_v14.R")
+source("examples/01_Quality of results/creation of test.R")
+
 df_spells_calculated <- CreateSpells(
   dataset = initial_df,
-  id = "person_id",
+  id = "id",
   start_date = "op_start_date",
   end_date = "op_end_date",
   category ="op_meaning",
   replace_missing_end_date = lubridate::ymd(20250101),
   gap_allowed = 1,
-  overlap = T,
+  overlap = F,
+  dataset_overlap = "df_overlap_calculated"
+)
+
+CreateSpells(
+  dataset = copy(df_spells_calculated),
+  id = "id",
+  start_date = "op_start_date",
+  end_date = "op_end_date",
+  category ="op_meaning",
+  only_overlaps = T,
   dataset_overlap = "df_overlap_calculated"
 )
 
