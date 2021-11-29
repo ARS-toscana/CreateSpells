@@ -17,7 +17,7 @@
 #' NOTE: Developed under R  4.0.3
 
 
-CreateSpells <- function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
+CreateSpells <- function(dataset, id, start_date, end_date, category, replace_missing_end_date,
                          overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
   if (!require("data.table")) install.packages("data.table")
   library(data.table)
