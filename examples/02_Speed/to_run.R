@@ -1,5 +1,5 @@
 library(data.table)
-source("R/CreateSpells_v14.R")
+source("R/CreateSpells_v15.R")
 
 row_to_gen <- 100000
 mean_n_obs_each_id <- 10

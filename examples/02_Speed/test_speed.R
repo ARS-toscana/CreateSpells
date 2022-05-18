@@ -1,5 +1,5 @@
 library(data.table)
-source("R/CreateSpells_v14.R")
+source("R/CreateSpells_v15.R")
 
 seq_id <- seq_len(as.integer(row_to_gen / mean_n_obs_each_id))
 set.seed(123)
