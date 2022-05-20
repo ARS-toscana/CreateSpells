@@ -17,61 +17,63 @@
 #' NOTE: Developed under R  4.0.3
 
 
-CreateSpells <- function(dataset, id, start_date, end_date, category, replace_missing_end_date,
+CreateSpells <- function(dataset, id, start_date, end_date, category, replace_missing_end_date = NA_integer_,
                          overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
-  if (!require("data.table")) install.packages("data.table")
   library(data.table)
+  library(vetr)
 
-  if(overlap == T || only_overlaps == T){
-    if (length(unique(dataset[[category]]))<=1)
-      stop("The overlaps can not be computed as the dataset has only one category")
-  }
-
-  flag_id = F
-  flag_start_date = F
-  flag_end_date = F
-  flag_category = F
-  if ("id" %in% names(dataset)) {
-    setnames(dataset, "id", "IDUNI")
-    id = "IDUNI"
-    flag_id = T
+  is.ymd_or_date <- function(x) {
+    x <- tryCatch(lubridate::ymd(x), error=function(e) F, warning=function(w) F)
+    if (lubridate::is.Date(x)) x <- T
+    return(x)
   }
 
-  if ("start_date" %in% names(dataset)) {
-    setnames(dataset, "start_date", "first_date")
-    start_date = "first_date"
-    flag_start_date = T
-  }
+  token_missing_dates <- vetr::vet_token(!(any(is.na(dataset[[end_date]])) && missing(.)),
+                                         "it is set to default value %s, however since there are missing dates a custom value should be set")
+  token_replace <- vetr::vet_token(is.ymd_or_date(.) && token_missing_dates,
+                                   "%s shoulde be a date or string/integer interpretable by lubridate::ymd")
+  token_col <- vetr::vet_token(. %in% colnames(dataset),
+                               paste("%s is not a column in", deparse(substitute(dataset))))
+  token_category <- vetr::vet_token(I(isTRUE(.) && length(unique(dataset[[category]])) >= 2 || isFALSE(.)),
+                                    "%s is set to TRUE, however the overlaps can not be computed as has less than two categories")
+  token_overlap <- vetr::vet_token(I(. == "df_overlap" || (isTRUE(overlap) || isTRUE(only_overlaps))),
+                                    "it is set to %s, however neither overlap or only_overlaps argument are set to TRUE")
 
-  if ("end_date" %in% names(dataset)) {
-    setnames(dataset, "end_date", "second_date")
-    end_date = "second_date"
-    flag_end_date = T
-  }
-  if ("category" %in% names(dataset)) {
-    setnames(dataset, "category", "op_meaning")
-    end_date = "op_meaning"
-    flag_category = T
-  }
+  vetr::vetr(
+    dataset = data.frame(),
+    id = character(1L) && token_col,
+    start_date = character(1L) && token_col,
+    end_date = character(1L) && token_col,
+    category = character(1L) && token_col,
+    replace_missing_end_date = token_replace,
+    overlap = logical(1L) && token_category,
+    only_overlaps = logical(1L) && token_category,
+    dataset_overlap = character(1L) && token_overlap,
+    gap_allowed = integer(1L)
+  )
+
+  token_impossible_period <- vetr::vet_token(all(.[[start_date]] < .[[end_date]], na.rm = T),
+                                             paste("Inside %s, there observation period/s with", deparse(substitute(start_date)),
+                                                   "less than", deparse(substitute(end_date))))
+  vetr::vet(token_impossible_period, dataset, stop = T)
 
   if (only_overlaps==F) {
-    dataset<-dataset[,(start_date) := lubridate::ymd(get(start_date))][, (end_date) := lubridate::ymd(get(end_date))]
+    dataset[, (start_date) := lubridate::ymd(get(..start_date))]
+    dataset[, (end_date) := lubridate::ymd(get(..end_date))]
 
-    if(sum(is.na(dataset[[start_date]]))==0) print("All start dates are not missing")
-    else{print("Some start date are missing")}
-    if(sum(is.na(dataset[[end_date]]))==0){print("All end dates are not missing")}
-    else {print("Some end date are missing")
-      if(!missing(replace_missing_end_date)) {
-        print(paste0("Replacing missing end date with ", lubridate::ymd(replace_missing_end_date)))
-        dataset<-dataset[is.na(get(end_date)), (end_date) := lubridate::ymd(replace_missing_end_date)]
-      } else {
-        stop ("Plase specify the replace_missing_end_date parameter")
-      }
-      # NOTE maybe add else
+    if(!any(is.na(dataset[[start_date]]))) print("All start dates are not missing")
+    else print("Some start dates are missing")
+    if(!any(is.na(dataset[[end_date]]))) print("All end dates are not missing")
+    else {print("Some end dates are missing")
+
+      replace_missing_end_date <- lubridate::ymd(replace_missing_end_date)
+      print(paste("Replacing missing end date/s with", replace_missing_end_date))
+      dataset<-dataset[is.na(get(end_date)), (end_date) := replace_missing_end_date]
+
+      #filter dataset
+      dataset<-dataset[get(start_date) < get(end_date)]
     }
 
-    #filter dataset
-    dataset<-dataset[get(start_date) < get(end_date)]
 
     #add level overall if category is given as input and has more than 1 category
     if (!missing(category)){
@@ -96,30 +98,30 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, replace_mi
 
     if (missing(category)) {
       grouping_vars <- id
-      dataset<-dataset[, `:=`(row_id = rowid(get(id)))]
+      dataset<-dataset[, `:=`(row_id = rowid(get(..id)))]
     } else {
       grouping_vars <- c(id, category)
-      dataset<-dataset[, `:=`(row_id = rowid(get(id), get(category)))]
+      dataset<-dataset[, row_id := rowid(get(..id), get(..category))]
     }
 
-    dataset<-dataset[, `:=`(lag_end_date = fifelse(row_id > 1, shift(get(end_date)), get(end_date)))]
+    dataset<-dataset[, `:=`(lag_end_date = fifelse(row_id > 1, shift(get(..end_date)), get(..end_date)))]
     dataset<-dataset[, `:=`(lag_end_date = as.integer(lag_end_date))]
     dataset<-dataset[, `:=`(lag_end_date = cummax(lag_end_date)), by = grouping_vars]
     dataset <- dataset[, `:=`(lag_end_date = as.Date(lag_end_date, "1970-01-01"))]
-    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(start_date) <= lag_end_date + gap_allowed, 0, 1))]
+    dataset <- dataset[, `:=`(num_spell = fifelse(row_id > 1 & get(..start_date) <= lag_end_date + gap_allowed, 0, 1))]
     dataset<-dataset[, `:=`(num_spell = cumsum(num_spell)), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
     if(!missing(category)) {
-      # dataset<-dataset[, c(entry_spell_category := min(get(start_date)),exit_spell_category := max(get(end_date))), by = c(id, category, "num_spell")]
-      # dataset<-dataset[, .(entry_spell_category = min(get(start_date)),
-      #      exit_spell_category = max(get(end_date))), keyby = .(id=get(id), get(category), num_spell)]
+      # dataset<-dataset[, c(entry_spell_category := min(get(..start_date)),exit_spell_category := max(get(..end_date))), by = c(id, category, "num_spell")]
+      # dataset<-dataset[, .(entry_spell_category = min(get(..start_date)),
+      #      exit_spell_category = max(get(..end_date))), keyby = .(id=get(..id), get(..category), num_spell)]
       myVector <- c(id,category,"num_spell","entry_spell_category","exit_spell_category")
-      dataset <- unique(dataset[, c("entry_spell_category", "exit_spell_category") := list(min(get(start_date)), max(get(end_date))), by = c(id, category, "num_spell")][, ..myVector])
+      dataset <- unique(dataset[, c("entry_spell_category", "exit_spell_category") := list(min(get(..start_date)), max(get(..end_date))), by = c(id, category, "num_spell")][, ..myVector])
       #
     }else{
       myVector <- c(id,"num_spell","entry_spell_category","exit_spell_category")
-      dataset<-unique(dataset[, .(entry_spell_category = min(get(start_date)), exit_spell_category = max(get(end_date))), by = c(id, "num_spell")][, ..myVector])
+      dataset<-unique(dataset[, .(entry_spell_category = min(get(..start_date)), exit_spell_category = max(get(..end_date))), by = c(id, "num_spell")][, ..myVector])
     }
 
     assign("output_spells_category", dataset)
@@ -136,7 +138,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, replace_mi
 
     #	For each pair of values A and B, create two temporary datasets
     #vec<-c(id)
-    #dataset<-dataset[, .SD[length(unique(get(category))) > 1], keyby = vec]
+    #dataset<-dataset[, .SD[length(unique(get(..category))) > 1], keyby = vec]
 
     for (i in seq_len(nrow(permut))) {
 
@@ -170,42 +172,18 @@ CreateSpells <- function(dataset, id, start_date, end_date, category, replace_mi
                         exit_spell_category = min(get(exs_1), get(exs_2))), by = id]
       CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
       # CAT<-CAT[!grepl("NA", category)]
-      CAT <- CAT[order(get(id), entry_spell_category)][, c(..id, "entry_spell_category", "exit_spell_category", ..category)]
-      CAT <- CAT[, num_spell := rowid(get(id))]
+      CAT <- CAT[order(c(id, "entry_spell_category"))][, c(..id, "entry_spell_category", "exit_spell_category", ..category)]
+      CAT <- CAT[, num_spell := rowid(get(..id))]
 
       export_df <- rbind(export_df, CAT)
     }
 
     #save the second output
     #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
-    if (flag_id) {
-      setnames(export_df, "IDUNI", "id")
-    }
-    if (flag_start_date) {
-      setnames(export_df, "first_date", "start_date")
-    }
-    if (flag_end_date) {
-      setnames(export_df, "second_date", "end_date")
-    }
-    if (flag_category) {
-      setnames(export_df, "op_meaning", "category")
-    }
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
 
   if(only_overlaps == F){
-    if (flag_id) {
-      setnames(output_spells_category, "IDUNI", "id")
-    }
-    if (flag_start_date) {
-      setnames(output_spells_category, "first_date", "start_date")
-    }
-    if (flag_end_date) {
-      setnames(export_df, "second_date", "end_date")
-    }
-    if (flag_category) {
-      setnames(output_spells_category, "op_meaning", "category")
-    }
     return(output_spells_category)
   }
 }
