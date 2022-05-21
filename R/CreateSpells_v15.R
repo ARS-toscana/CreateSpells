@@ -66,7 +66,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
                                                    "less than", deparse(substitute(end_date))))
   vetr::vet(token_impossible_period, dataset, stop = T)
 
-  if (only_overlaps==F) {
+  if (!only_overlaps) {
     dataset[, (start_date) := lubridate::ymd(get(..start_date))]
     dataset[, (end_date) := lubridate::ymd(get(..end_date))]
 
@@ -86,7 +86,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
     #add level overall if category is given as input and has more than 1 category
     if (!is.null(category) & length(unique(dataset[[category]])) >= 2){
       dataset <- rbindlist(list(dataset, copy(dataset)[, (category) := "_overall"]))
-      print("The level overall is added as the is more than one category")
+      print("The level 'overall' is added as the is more than one category")
     }
 
     if(is.null(category)){
@@ -127,7 +127,9 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
   #OPTIONAL SECTION REGARDING OVERLAPS
 
-  if(overlap == T || only_overlaps == T){
+  if(overlap || only_overlaps){
+
+    export_df <- data.table()
     dataset <- dataset[get(category) != "_overall",]
 
     # Create list of unique not missing categories
@@ -162,22 +164,18 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
       #	If no overlap go to next pair
       if (nrow(CAT) == 0) next
 
-      CAT <- CAT[, `:=`(entry_spell_category = max(get(ens_1), get(ens_2)),
-                        exit_spell_category = min(get(exs_1), get(exs_2))), by = id]
+      # Calculate overlapping spells between categories
+      CAT <- CAT[, .(entry_spell_category = max(get(ens_1), get(ens_2)),
+                     exit_spell_category = min(get(exs_1), get(exs_2))), by = id]
       CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
-      # CAT<-CAT[!grepl("NA", category)]
       CAT <- CAT[order(c(id, "entry_spell_category"))][, c(..id, "entry_spell_category", "exit_spell_category", ..category)]
       CAT <- CAT[, num_spell := rowid(get(..id))]
 
       export_df <- rbind(export_df, CAT)
     }
 
-    #save the second output
-    #write_csv(export_df, path = paste0(dataset_overlap,".csv"))
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
 
-  if(only_overlaps == F){
-    return(output_spells_category)
-  }
+  if(!only_overlaps) return(output_spells_category)
 }
