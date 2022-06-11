@@ -1,15 +1,15 @@
 library(data.table)
 
-source("R/CreateSpells_v14.R")
+source("R/CreateSpells.R")
 source("examples/01_Quality of results/creation of test.R")
-
+initial_df <- initial_df[lubridate::ymd(op_start_date) > lubridate::ymd(20190101), op_start_date := NA]
 df_spells_calculated <- CreateSpells(
-  dataset = initial_df,
+  dataset = as.data.frame(initial_df),
   id = "id",
   start_date = "op_start_date",
   end_date = "op_end_date",
   category ="op_meaning",
-  replace_missing_end_date = lubridate::ymd(20250101),
+  replace_missing_end_date = 20250101,
   gap_allowed = 1,
   overlap = T,
   dataset_overlap = "df_overlap_calculated"
