@@ -8,19 +8,20 @@
 #' @param start_date variable containing the start date (the date must me ordered as Year Month Day)
 #' @param end_date variable containing the end date (the date must me ordered as Year Month Day)
 #' @param category (optional) categorical variable
-#' @param replace_missing_end_date: (optional). When specified, it contains a date to replace end_date when it is missing.
-#' @param overlap: (optional) default FALSE. If TRUE, overlaps of pairs of categories are processed as well.
-#' @param dataset_overlap: (optional) if overlap TRUE, the name of the file containing the overlap dataset
-#' @param only_overlaps: (optional) if only_overlaps TRUE, skip the calculation the spells
-#' @param gap_allowed: (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
-#'
-#' NOTE: Developed under R  4.0.3
+#' @param replace_missing_end_date (optional). When specified, it contains a date to replace end_date when it is missing.
+#' @param overlap (optional) default FALSE. If TRUE, overlaps of pairs of categories are processed as well.
+#' @param dataset_overlap (optional) if overlap TRUE, the name of the file containing the overlap dataset
+#' @param only_overlaps (optional) if only_overlaps TRUE, skip the calculation the spells
+#' @param gap_allowed (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
+#' @importFrom data.table :=
+
+# NOTE: Developed under R  4.0.3
 
 
 CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
                          overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
-  library(data.table)
-  library(vetr)
+
+  ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
   mycall <- match.call()
   mycall[[1]] <- as.symbol("check_sanitize_inputs") # use inner 1
@@ -40,12 +41,13 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
       dataset<-dataset[is.na(get(end_date)), (end_date) := replace_missing_end_date]
 
       #filter dataset
-      dataset<-dataset[get(start_date) < get(end_date)]
+      #TODO add warning
+      dataset<-dataset[get(start_date) <= get(end_date)]
     }
 
     #add level overall if category is given as input and has more than 1 category
     if (!is.null(category) & length(unique(dataset[[category]])) >= 2){
-      dataset <- rbindlist(list(dataset, copy(dataset)[, (category) := "_overall"]))
+      dataset <- data.table::rbindlist(list(dataset, data.table::copy(dataset)[, (category) := "_overall"]))
       print("The level 'overall' is added as the is more than one category")
     }
 
@@ -57,13 +59,13 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
       grouping_vars <- c(id, category)
     }
     #group by and arrange the dataset
-    setorderv(dataset, order_vec)
+    data.table::setorderv(dataset, order_vec)
 
     #row id by group
     dataset[, row_id := seq_len(.N), by = grouping_vars]
 
     #lagged end_date
-    dataset[, lag_end_date := fifelse(row_id > 1, shift(get(..end_date)), get(..end_date))]
+    dataset[, lag_end_date := data.table::fifelse(row_id > 1, data.table::shift(get(..end_date)), get(..end_date))]
 
     # cumulative max for dates
     dataset[, lag_end_date := as.integer(lag_end_date)]
@@ -71,7 +73,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
     dataset[, lag_end_date := as.Date(lag_end_date, "1970-01-01")]
 
     #compute the number of spell
-    dataset[, num_spell := fifelse(row_id > 1 & get(..start_date) <= lag_end_date + gap_allowed, 0, 1)]
+    dataset[, num_spell := data.table::fifelse(row_id > 1 & get(..start_date) <= lag_end_date + gap_allowed, 0, 1)]
     dataset[, num_spell := cumsum(num_spell), by = grouping_vars]
 
     #group by num spell and compute min and max date for each one
@@ -80,7 +82,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
     dataset <- dataset[, .(entry_spell_category = min(get(..start_date)),
                            exit_spell_category = max(get(..end_date))), by = grouping_vars]
-    dataset <- dataset[, ..keep_col]
+    dataset <- dataset[, keep_col, with = FALSE]
 
     assign("output_spells_category", dataset)
   }
@@ -89,7 +91,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
   if(overlap || only_overlaps){
 
-    export_df <- data.table()
+    export_df <- data.table::data.table()
     dataset <- dataset[get(category) != "_overall",]
 
     # Create list of unique not missing categories
@@ -112,10 +114,10 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
       #	For each pair of values A and B, create two temporary datasets
       outputA <- dataset[get(category) == p_1, ][, c("num_spell", category) := NULL]
-      setnames(outputA, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
+      data.table::setnames(outputA, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
 
       outputB <- dataset[get(category) == p_2, ][, c("num_spell", category) := NULL]
-      setnames(outputB, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
+      data.table::setnames(outputB, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
 
       #	Perform a join multi-to-multi of the two datasets
       CAT <- merge(outputA, outputB, by = c(id), all = T, allow.cartesian = T)
@@ -128,8 +130,11 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
       CAT <- CAT[, .(entry_spell_category = max(get(ens_1), get(ens_2)),
                      exit_spell_category = min(get(exs_1), get(exs_2))), by = id]
       CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
-      CAT <- CAT[order(c(id, "entry_spell_category"))][, c(..id, "entry_spell_category", "exit_spell_category", ..category)]
-      CAT <- CAT[, num_spell := rowid(get(..id))]
+
+      select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
+      CAT <- CAT[order(c(id, "entry_spell_category"))][, select_col, with = FALSE]
+
+      CAT <- CAT[, num_spell := data.table::rowid(get(..id))]
 
       export_df <- rbind(export_df, CAT)
     }
