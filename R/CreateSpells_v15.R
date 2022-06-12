@@ -17,10 +17,30 @@
 #' NOTE: Developed under R  4.0.3
 
 
-CreateSpells <- function(dataset, id, start_date, end_date, category, category_is_numeric=F, replace_missing_end_date,
-                         overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
-  if (!require("data.table")) install.packages("data.table")
+CreateSpells <- function(dataset, id, start_date, end_date, category, category_is_numeric = F,
+                         replace_missing_end_date, overlap=F, dataset_overlap = "df_overlap",
+                         only_overlaps=F, gap_allowed = 1){
+
   library(data.table)
+  library(vetr)
+
+  is.ymd_or_date <- function(x) {
+    x <- tryCatch(lubridate::ymd(x), error=function(e) F, warning=function(w) F)
+    if (lubridate::is.Date(x)) {
+      x <- T
+    }
+    return(x)
+  }
+
+  vetr::vetr(
+    id = character(1L) && . %in% colnames(dataset),
+    start_date = character(1L) && . %in% colnames(dataset),
+    end_date = character(1L) && . %in% colnames(dataset),
+    category = character(1L) && . %in% colnames(dataset),
+    category_is_numeric = logical(1L),
+    replace_missing_end_date = is.ymd_or_date(.)
+  )
+
 
   if(overlap == T || only_overlaps == T){
     if (length(unique(dataset[[category]]))<=1)
