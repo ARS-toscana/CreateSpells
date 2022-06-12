@@ -18,5 +18,4 @@ RoxygenNote: 7.1.1
 Imports: 
     RcppAlgos,
     lubridate,
-    magrittr,
     data.table
