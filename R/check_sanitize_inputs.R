@@ -1,5 +1,5 @@
 check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
-                                  overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1) {
+                                  overlap=F, dataset_overlap = NA_character_, only_overlaps=F, gap_allowed = 1) {
 
   . <- NULL
 
@@ -11,15 +11,12 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
   }
 
   # Check if there are any missing dates
-  token_missing_dates <- vetr::vet_token(any(is.na(.)),
-                                         "it is set to default value %s,
-                                         however since there are missing dates a custom value should be set
-                                         (Error 01)")
+  token_missing_dates <- vetr::vet_token(all(!is.na(.)),
+                                         "The date is %s, please specify a valid date (Error 01)")
 
   # Check if x is/can be a date
-  token_replace <- vetr::vet_token(!(!is.ymd_or_date(.) && token_missing_dates),
-                                   "%s shoulde be a date or string/integer interpretable by lubridate::ymd
-                                   (Error 02)")
+  token_is_ymd_or_date <- vetr::vet_token(is.ymd_or_date(.),
+                                   "%s shoulde be a date or string/integer interpretable by lubridate::ymd (Error 02)")
 
   # Check if x is a column of dataset
   token_col <- vetr::vet_token(. %in% colnames(dataset),
@@ -36,7 +33,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
                                         has less than two categories (Error 05)")
 
   # Check if any overlap is T or if dataset_overlap has default value
-  token_overlap <- vetr::vet_token(I(. == "df_overlap" || (isTRUE(overlap) || isTRUE(only_overlaps))),
+  token_overlap <- vetr::vet_token(I(is.na(.) || (isTRUE(overlap) || isTRUE(only_overlaps))),
                                    "it is set to %s, however neither overlap or only_overlaps
                                    argument are set to TRUE (Error 06)")
 
@@ -49,9 +46,9 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
     start_date = character(1L) && token_col,
     end_date = character(1L) && token_col,
     category = NULL || character(1L) && token_col,
-    replace_missing_end_date = NULL || token_replace,
+    replace_missing_end_date = NULL || (token_missing_dates && token_is_ymd_or_date),
     overlap = logical(1L) && token_exist_categories && token_n_categories,
-    only_overlaps = logical(1L) && token_n_categories,
+    only_overlaps = logical(1L) && token_exist_categories && token_n_categories,
     dataset_overlap = character(1L) && token_overlap,
     gap_allowed = integer(1L)
   )
