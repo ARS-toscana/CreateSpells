@@ -1,55 +1,39 @@
+test_that("single observation", {
+  expect_identical(CreateSpells(dataset = row_wise_dt(
+     ~id,~start_date, ~end_date,~comment,
+    "a1", "20210101","20220101","single",
+  ), id = id, start_date = start_date , end_date = end_date),
+  row_wise_dt(
+    ~id,~start_date, ~end_date,~comment,
+    "a1", "20210101","20220101","single",
+  ))
+})
 
-
-# par_excl_dataset <- list(dataset = "test_data",
-#                          id = "id",
-#                          start_date = "op_start_date",
-#                          end_date = "op_end_date",
-#                          category ="op_meaning",
-#                          replace_missing_end_date = 20250101,
-#                          gap_allowed = 1,
-#                          overlap = T,
-#                          dataset_overlap = "df_overlap_calculated",
-#                          only_overlaps = F,
-#                          gap_allowed = 1)
+# row_wise_dt(
+#   ~id,~start_date, ~end_date,~op_meaning,                  ~comment,
+#   "a1", "20100101","20200101",        "a",                  "single",
+#   "a2", "20100101","20200101",        "a",         "partial overlap",
+#   "a2", "20150101",        NA,        "a",         "partial overlap",
+#   "a3", "20100101","20200101",        "a",        "complete overlap",
+#   "a3", "20150101","20160101",        "a",        "complete overlap",
+#   "a4", "20100101","20150101",        "a",                "disjoint",
+#   "a4", "20180101","20200101",        "a",                "disjoint",
+#   "a5", "20100101","20200101",        "a",                   "mixed",
+#   "a5", "20110101","20130101",        "a",                   "mixed",
+#   "a5", "20140101","20160101",        "a",                   "mixed",
+#   "a5", "20150101","20180101",        "a",                   "mixed",
+#   "a5", "20170101","20210101",        "a",                   "mixed",
+#   "a5", "20220101",        NA,        "a",                   "mixed",
+#   "a6", "20100101","20200101",        "a",                 "mixed 2",
+#   "a6", "20110101","20130101",        "a",                 "mixed 2",
+#   "a6", "20140101","20210101",        "a",                 "mixed 2",
+#   "b1", "20100101",        NA,        "b",          "not exist in a",
+#   "a1", "20150101",        NA,        "b",  "exist, partial overlap",
+#   "a2", "20120101","20200101",        "b", "exist, complete overlap",
+#   "a3", "20210101",        NA,        "b",       "exist, no overlap",
+#   "a4", "20160101","20170101",        "b", "exist, between disjoint",
+#   "c1", "20100101","20200101",        "c",     "not exist in a or b",
+#   "a1", "20100101","20200101",        "c",        "exist in a and b",
+#   "b1", "20150101","20200101",        "c",         "exist only in b",
 #
-# par_excl_dataset[["dataset"]]
-
-expect_floor_equal <- function(dataset = test_data, id = "id", start_date = "op_start_date",
-                               end_date = "op_end_date", category = NULL, replace_missing_end_date = NULL,
-                               overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1, error_include) {
-  eval(bquote(expect_error(check_sanitize_inputs(dataset = dataset, id = id, start_date = start_date,
-                                                 end_date = end_date, category = category,
-                                                 replace_missing_end_date = replace_missing_end_date,
-                                                 overlap = overlap, dataset_overlap = dataset_overlap,
-                                                 only_overlaps = only_overlaps, gap_allowed = gap_allowed),
-                           regexp = error_include)))
-}
-
-test_that("dataset only accepts dataframes", {
-  expect_floor_equal(dataset = 1, error_include = "data.frame")
-  expect_floor_equal(dataset = NA, error_include = "data.frame")
-  expect_floor_equal(dataset = NULL, error_include = "data.frame")
-  expect_floor_equal(dataset = "test_data", error_include = "data.frame")
-  expect_floor_equal(dataset = test_data, error_include = NA)
-})
-
-test_that("id only accepts characters", {
-  expect_floor_equal(id = 1, error_include = "character")
-  expect_floor_equal(id = NA, error_include = "character")
-  expect_floor_equal(id = NULL, error_include = "character")
-  expect_floor_equal(id = "id", error_include = NA)
-})
-
-test_that("start_date only accepts characters", {
-  expect_floor_equal(start_date = 1, error_include = "character")
-  expect_floor_equal(start_date = NA, error_include = "character")
-  expect_floor_equal(start_date = NULL, error_include = "character")
-  expect_floor_equal(start_date = "op_start_date", error_include = NA)
-})
-
-test_that("end_date only accepts characters", {
-  expect_floor_equal(end_date = 1, error_include = "character")
-  expect_floor_equal(end_date = NA, error_include = "character")
-  expect_floor_equal(end_date = NULL, error_include = "character")
-  expect_floor_equal(end_date = "op_end_date", error_include = NA)
-})
+# )
