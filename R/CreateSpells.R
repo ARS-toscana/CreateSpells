@@ -127,8 +127,8 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
       if (nrow(CAT) == 0) next
 
       # Calculate overlapping spells between categories
-      CAT <- CAT[, .(entry_spell_category = max(get(ens_1), get(ens_2)),
-                     exit_spell_category = min(get(exs_1), get(exs_2))), by = id]
+      CAT <- CAT[, .(entry_spell_category = pmax(get(ens_1), get(ens_2)),
+                     exit_spell_category = pmin(get(exs_1), get(exs_2)))]
       CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
 
       select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
