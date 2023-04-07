@@ -1,5 +1,5 @@
 check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
-                                  overlap=F, dataset_overlap = NA_character_, only_overlaps=F, gap_allowed = 1) {
+                                  overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1) {
 
   . <- NULL
 
@@ -60,5 +60,5 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
                                                    "less than", deparse(substitute(end_date))))
   vetr::vet(token_impossible_period, dataset, stop = T)
 
-  return(dataset)
+  return()
 }
