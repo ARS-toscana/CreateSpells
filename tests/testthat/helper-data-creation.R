@@ -1,7 +1,7 @@
 create_test_df <- function() {
   temp_df <- tibble::tribble(
-    ~id,~op_start_date,~op_end_date,~op_meaning,                  ~comment,
-    #---------|--------------|------------|-----------|--------------------------|
+    ~id, ~op_start_date,~op_end_date,~op_meaning,           ~to_use_comment,
+    #---|--------------|------------|-----------|--------------------------|
     "a1",    "20100101",  "20200101",        "a",                  "single",
     "a2",    "20100101",  "20200101",        "a",         "partial overlap",
     "a2",    "20150101",          NA,        "a",         "partial overlap",
@@ -25,8 +25,7 @@ create_test_df <- function() {
     "a4",    "20160101",  "20170101",        "b", "exist, between disjoint",
     "c1",    "20100101",  "20200101",        "c",     "not exist in a or b",
     "a1",    "20100101",  "20200101",        "c",        "exist in a and b",
-    "b1",    "20150101",  "20200101",        "c",         "exist only in b",
-
+    "b1",    "20150101",  "20200101",        "c",         "exist only in b"
   )
   return(data.table::as.data.table(temp_df))
 }

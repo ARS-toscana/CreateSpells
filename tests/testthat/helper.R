@@ -1,6 +1,6 @@
 test_error_type <- function(dataset = test_data, id = "id", start_date = "op_start_date",
                             end_date = "op_end_date", category = NULL, replace_missing_end_date = NULL,
-                            overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1, error_include) {
+                            overlap=F, dataset_overlap = NA_character_, only_overlaps=F, gap_allowed = 1, error_include) {
   eval(bquote(expect_error(check_sanitize_inputs(dataset = dataset, id = id, start_date = start_date,
                                                  end_date = end_date, category = category,
                                                  replace_missing_end_date = replace_missing_end_date,
@@ -20,5 +20,8 @@ test_type_mult <- function(col_name, error_include, not_allowed_values, ...) {
 }
 
 row_wise_dt <- function(...) {
-  data.table::as.data.table(tibble::tribble(...))
+  tmp <- data.table::as.data.table(tibble::tribble(...))
+  tmp[, entry_spell_category := lubridate::ymd(entry_spell_category)]
+  tmp[, exit_spell_category := lubridate::ymd(exit_spell_category)]
 }
+
