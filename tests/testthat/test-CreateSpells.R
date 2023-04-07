@@ -1,12 +1,15 @@
-test_that("single observation", {
-  expect_identical(CreateSpells(dataset = row_wise_dt(
-     ~id,~start_date, ~end_date,~comment,
-    "a1", "20210101","20220101","single",
-  ), id = id, start_date = start_date , end_date = end_date),
-  row_wise_dt(
-    ~id,~start_date, ~end_date,~comment,
-    "a1", "20210101","20220101","single",
-  ))
+test_that("single observation no meaning", {
+  expect_identical(CreateSpells(dataset = test_data[to_use_comment == "single"][, op_meaning := NULL],
+                                id = "id", start_date = "op_start_date" , end_date = "op_end_date"),
+                   row_wise_dt(~id ,~num_spell,~entry_spell_category,~exit_spell_category,
+                               "a1",         1,           "20100101",          "20200101"))
+})
+
+test_that("single observation no meaning", {
+  expect_identical(CreateSpells(dataset = test_data[to_use_comment == "single"],
+                                id = "id", start_date = "op_start_date" , end_date = "op_end_date"),
+                   row_wise_dt(~id ,~num_spell,~entry_spell_category,~exit_spell_category,
+                               "a1",         1,           "20100101",          "20200101"))
 })
 
 # row_wise_dt(
