@@ -29,39 +29,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
     dataset <- data_preparation(dataset, id, start_date, end_date, category, replace_missing_end_date)
 
-    if(is.null(category)){
-      order_vec <- c(id, start_date, end_date)
-      grouping_vars <- id
-    } else {
-      order_vec <- c(id, category, start_date, end_date)
-      grouping_vars <- c(id, category)
-    }
-    #group by and arrange the dataset
-    data.table::setorderv(dataset, order_vec)
-
-    #row id by group
-    dataset[, row_id := seq_len(.N), by = grouping_vars]
-
-    #lagged end_date
-    dataset[, lag_end_date := data.table::fifelse(row_id > 1, data.table::shift(get(..end_date)), get(..end_date))]
-
-    # cumulative max for dates
-    dataset[, lag_end_date := as.integer(lag_end_date)]
-    dataset[, lag_end_date := cummax(lag_end_date), by = grouping_vars]
-    dataset[, lag_end_date := as.Date(lag_end_date, "1970-01-01")]
-
-    #compute the number of spell
-    dataset[, num_spell := data.table::fifelse(row_id > 1 & get(..start_date) <= lag_end_date + gap_allowed, 0, 1)]
-    dataset[, num_spell := cumsum(num_spell), by = grouping_vars]
-
-    #group by num spell and compute min and max date for each one
-    keep_col <- c(grouping_vars, "num_spell", "entry_spell_category", "exit_spell_category")
-    grouping_vars <- c(grouping_vars, "num_spell")
-
-    dataset <- dataset[, .(entry_spell_category = min(get(..start_date)),
-                           exit_spell_category = max(get(..end_date))), by = grouping_vars]
-    dataset <- dataset[, keep_col, with = FALSE]
-
+    dataset <- CreateSpells.internal(dataset, id, start_date, end_date, category, gap_allowed)
     assign("output_spells_category", dataset)
   }
 
