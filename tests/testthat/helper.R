@@ -9,6 +9,12 @@ test_error_type <- function(dataset = test_data, id = "id", start_date = "op_sta
                            regexp = error_include)))
 }
 
+test_CreateSpells.internal <- function(dataset = test_data, id = "id", start_date = "st",
+                                       end_date = "en", category = NULL, gap_allowed = 1) {
+  CreateSpells.internal(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
+                        category = category, gap_allowed = gap_allowed)
+}
+
 test_type_mult <- function(col_name, error_include, not_allowed_values, ...) {
   for (i in not_allowed_values) {
     arguments <- list(...)
