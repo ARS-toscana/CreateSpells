@@ -15,41 +15,19 @@
 #' @param gap_allowed (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
 #' @importFrom data.table :=
 
-# NOTE: Developed under R  4.0.3
+# NOTE: Developed under R  4.2.3
 
 
 CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
-                         overlap=F, dataset_overlap = "df_overlap", only_overlaps=F, gap_allowed = 1){
+                         overlap = F, dataset_overlap = "df_overlap", only_overlaps = F, gap_allowed = 1){
 
   ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
-  mycall <- match.call()
-  mycall[[1]] <- as.symbol("check_sanitize_inputs") # use inner 1
-  dataset <- eval(mycall)
+  pass_all_arguments("check_sanitize_inputs")
 
   if (!only_overlaps) {
-    dataset[, (start_date) := lubridate::ymd(get(..start_date))]
-    dataset[, (end_date) := lubridate::ymd(get(..end_date))]
 
-    if(!any(is.na(dataset[[start_date]]))) print("All start dates are not missing")
-    else print("Some start dates are missing")
-    if(!any(is.na(dataset[[end_date]]))) print("All end dates are not missing")
-    else {print("Some end dates are missing")
-
-      replace_missing_end_date <- lubridate::ymd(replace_missing_end_date)
-      print(paste("Replacing missing end date/s with", replace_missing_end_date))
-      dataset<-dataset[is.na(get(end_date)), (end_date) := replace_missing_end_date]
-
-      #filter dataset
-      #TODO add warning
-      dataset<-dataset[get(start_date) <= get(end_date)]
-    }
-
-    #add level overall if category is given as input and has more than 1 category
-    if (!is.null(category) & length(unique(dataset[[category]])) >= 2){
-      dataset <- data.table::rbindlist(list(dataset, data.table::copy(dataset)[, (category) := "_overall"]))
-      print("The level 'overall' is added as the is more than one category")
-    }
+    dataset <- data_preparation(dataset, id, start_date, end_date, category, replace_missing_end_date)
 
     if(is.null(category)){
       order_vec <- c(id, start_date, end_date)
@@ -90,55 +68,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
   #OPTIONAL SECTION REGARDING OVERLAPS
 
   if(overlap || only_overlaps){
-
-    export_df <- data.table::data.table()
-    dataset <- dataset[get(category) != "_overall",]
-
-    # Create list of unique not missing categories
-    unique_cat <- as.list(unique(dataset[[category]]))
-    unique_cat <- unique_cat[!is.na(unique_cat)]
-
-    # Create the combinations of pairs of categories
-    permut <- t(utils::combn(unique_cat, 2))
-
-    # Cycle for each pair
-    for (i in seq_len(nrow(permut))) {
-
-      p_1 <- permut[i, 1]
-      p_2 <- permut[i, 2]
-
-      ens_1 <- paste0("entry_spell_category_", p_1)
-      exs_1 <- paste0("exit_spell_category_", p_1)
-      ens_2 <- paste0("entry_spell_category_", p_2)
-      exs_2 <- paste0("exit_spell_category_", p_2)
-
-      #	For each pair of values A and B, create two temporary datasets
-      outputA <- dataset[get(category) == p_1, ][, c("num_spell", category) := NULL]
-      data.table::setnames(outputA, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
-
-      outputB <- dataset[get(category) == p_2, ][, c("num_spell", category) := NULL]
-      data.table::setnames(outputB, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
-
-      #	Perform a join multi-to-multi of the two datasets
-      CAT <- merge(outputA, outputB, by = c(id), all = T, allow.cartesian = T)
-      CAT <- CAT[(get(ens_1) <= get(exs_2) + gap_allowed & get(exs_1) + gap_allowed >= get(ens_2)) | (get(ens_2) <= get(exs_1) + gap_allowed & get(exs_2) + gap_allowed >= get(ens_1)), ]
-
-      #	If no overlap go to next pair
-      if (nrow(CAT) == 0) next
-
-      # Calculate overlapping spells between categories
-      CAT <- CAT[, .(entry_spell_category = pmax(get(ens_1), get(ens_2)),
-                     exit_spell_category = pmin(get(exs_1), get(exs_2)))]
-      CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
-
-      select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
-      CAT <- CAT[order(c(id, "entry_spell_category"))][, select_col, with = FALSE]
-
-      CAT <- CAT[, num_spell := data.table::rowid(get(..id))]
-
-      export_df <- rbind(export_df, CAT)
-    }
-
+    export_df <- overlap.internal(dataset, id, start_date, end_date, category, gap_allowed)
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
 
