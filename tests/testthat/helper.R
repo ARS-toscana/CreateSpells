@@ -9,8 +9,9 @@ test_error_type <- function(dataset = test_data, id = "id", start_date = "op_sta
                            regexp = error_include)))
 }
 
-test_CreateSpells.internal <- function(dataset = test_data, id = "id", start_date = "st",
-                                       end_date = "en", category = NULL, gap_allowed = 1) {
+test_CreateSpells.internal <- function(..., id = "id", start_date = "start_date",
+                                       end_date = "end_date", category = NULL, gap_allowed = 1) {
+  dataset <- row_wise_dt(...)
   CreateSpells.internal(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
                         category = category, gap_allowed = gap_allowed)
 }
@@ -27,7 +28,15 @@ test_type_mult <- function(col_name, error_include, not_allowed_values, ...) {
 
 row_wise_dt <- function(...) {
   tmp <- data.table::as.data.table(tibble::tribble(...))
-  tmp[, entry_spell_category := lubridate::ymd(entry_spell_category)]
-  tmp[, exit_spell_category := lubridate::ymd(exit_spell_category)]
+  if ("entry_spell_category" %in% colnames(tmp)) {
+    tmp[, entry_spell_category := lubridate::ymd(entry_spell_category)]
+  } else {
+    tmp[, start_date := lubridate::ymd(start_date)]
+  }
+  if ("exit_spell_category" %in% colnames(tmp)) {
+    tmp[, exit_spell_category := lubridate::ymd(exit_spell_category)]
+  } else {
+    tmp[, end_date := lubridate::ymd(end_date)]
+  }
 }
 
