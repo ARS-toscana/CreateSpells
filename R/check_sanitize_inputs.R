@@ -5,18 +5,18 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 
   # Function to check if x is a date or is an input that ymd() can accept
   is.ymd_or_date <- function(x) {
-    x <- tryCatch(lubridate::ymd(x), error=function(e) F, warning=function(w) F)
-    if (lubridate::is.Date(x)) x <- T
+    x <- tryCatch(lubridate::ymd(x[!is.na(x)]), error=function(e) F, warning=function(w) F)
+    if (all(lubridate::is.Date(x))) x <- T
     return(x)
   }
 
   # Check if there are any missing dates
-  token_missing_dates <- vetr::vet_token(all(!is.na(.)),
-                                         "The date is %s, please specify a valid date (Error 01)")
+  token_missing_dates <- vetr::vet_token(!is.na(.),
+                                         "%s is missing, please specify a valid date (Error 01)")
 
   # Check if x is/can be a date
   token_is_ymd_or_date <- vetr::vet_token(is.ymd_or_date(.),
-                                   "%s shoulde be a date or string/integer interpretable by lubridate::ymd (Error 02)")
+                                   "%s should be a date or string/integer interpretable by lubridate::ymd (Error 02)")
 
   # Check if x is a column of dataset
   token_col <- vetr::vet_token(. %in% colnames(dataset),
@@ -53,11 +53,29 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
     gap_allowed = integer(1L)
   )
 
+  # Check if there are any missing dates
+  token_missing_start_dates <- vetr::vet_token(!is.na(.[[start_date]]),
+                                               "Some start dates of %s are missing, please update those values or
+                                               deleted the records (Error 07)")
+
+  # Check if x is/can be a date
+  token_is_ymd_or_start_date <- vetr::vet_token(is.ymd_or_date(.[[start_date]]),
+                                          "All start dates in %s should be a date or string/integer
+                                          interpretable by lubridate::ymd (Error 08)")
+
+  # Check if x is/can be a date
+  token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[end_date]]),
+                                          "All end dates in %s  should be a date or string/integer
+                                          interpretable by lubridate::ymd (Error 09)")
+
   # Check for periods with end date before start date
-  token_impossible_period <- vetr::vet_token(all(.[[start_date]] < .[[end_date]], na.rm = T),
-                                             paste("Inside %s, there observation period/s with",
+  vetr::vet(token_missing_start_dates && token_is_ymd_or_start_date && token_is_ymd_or_end_date, dataset, stop = T)
+
+  # Check for periods with end date before start date
+  token_impossible_period <- vetr::vet_token(all(.[[start_date]] <= .[[end_date]], na.rm = T),
+                                             paste("Inside %s, there are observation period/s with",
                                                    deparse(substitute(start_date)),
-                                                   "less than", deparse(substitute(end_date))))
+                                                   "less than", deparse(substitute(end_date)), " (Error 10)"))
   vetr::vet(token_impossible_period, dataset, stop = T)
 
   return()
