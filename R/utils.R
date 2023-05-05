@@ -4,60 +4,58 @@ pass_all_arguments <- function(x) {
   eval(mycall)
 }
 
-data_preparation <- function(dataset, id, start_date, end_date, category, replace_missing_end_date) {
+data_preparation <- function(dataset, start_date, end_date, replace_missing_end_date) {
 
-  dataset[, (start_date) := lubridate::ymd(get(..start_date))]
-  dataset[, (end_date) := lubridate::ymd(get(..end_date))]
+  dataset[!lubridate::is.Date(get("start_date")), (start_date) := lubridate::ymd(get(..start_date))]
+  dataset[!lubridate::is.Date(get("end_date")), (end_date) := lubridate::ymd(get(..end_date))]
+  if (any(is.na(dataset[[end_date]]))) {
 
-  nrow_before <- nrow(dataset)
-  dataset <- dataset[!is.na(get(start_date))]
-  nrow_after <- nrow(dataset)
-  if(nrow_before != nrow_after) {
-    warning("Some start dates are missing. Those periods have been removed from computation of spells")
-  }
-
-  if(any(is.na(dataset[[end_date]]))) {
-
-    print("Some end dates are missing")
+    message("Some end dates are missing")
 
     if (is.null(replace_missing_end_date)){
-      warning("Some end dates are missing. Since parameter 'replace_missing_end_date' has not been specified,
-                  those periods have been removed from computation of spells")
-      dataset <- dataset[!is.na(get(end_date))]
+      warning("Since parameter 'replace_missing_end_date' has not been specified,
+              those periods have been removed from computation of spells  (Warning 01)")
+      dataset <- dataset[!is.na(get("end_date")), ]
 
-      nrow_before <- nrow(dataset)
-      dataset <- dataset[get(start_date) <= get(end_date)]
-      nrow_after <- nrow(dataset)
-      if(nrow_before != nrow_after) {
-        warning("Some start dates are after their respective end dates.
-                    Those periods have been removed from computation of spells")
-      }
+      # nrow_before <- nrow(dataset)
+      # dataset <- dataset[get(start_date) <= get(end_date)]
+      # nrow_after <- nrow(dataset)
+      # if(nrow_before != nrow_after) {
+      #   warning("Some start dates are after their respective end dates.
+      #               Those periods have been removed from computation of spells")
+      # }
 
     } else {
       replace_missing_end_date <- lubridate::ymd(replace_missing_end_date)
-      print(paste("Replacing missing end date/s with", replace_missing_end_date))
-      dataset[is.na(get(end_date)), (end_date) := replace_missing_end_date]
-      dataset_missing <- dataset[is.na(get(end_date))][, (end_date) := replace_missing_end_date]
-      dataset <- dataset[!is.na(get(end_date))]
-
-      nrow_before <- nrow(dataset)
-      dataset <- dataset[get(start_date) <= get(end_date)]
-      nrow_after <- nrow(dataset)
-      if(nrow_before != nrow_after) {
-        warning("Some start dates are after their respective end dates.
-                    Those periods have been removed from computation of spells")
-      }
-
-      dataset_missing <- dataset_missing[get(start_date) <= get(end_date)]
-
-      dataset <- rbindlist(list(dataset_missing, dataset))
+      message(paste("Replacing missing end date/s with", replace_missing_end_date))
+      dataset[is.na(get("end_date")), (end_date) := replace_missing_end_date]
+      dataset <- dataset[get("start_date") <= get("end_date")]
+      # dataset_missing <- dataset[is.na(get(end_date))][, (end_date) := replace_missing_end_date]
+      # dataset <- dataset[!is.na(get(end_date))]
+      #
+      # nrow_before <- nrow(dataset)
+      # dataset <- dataset[get(start_date) <= get(end_date)]
+      # nrow_after <- nrow(dataset)
+      # if(nrow_before != nrow_after) {
+      #   warning("Some start dates are after their respective end dates.
+      #               Those periods have been removed from computation of spells")
+      # }
+      #
+      # dataset_missing <- dataset_missing[get(start_date) <= get(end_date)]
+      #
+      # dataset <- rbindlist(list(dataset_missing, dataset))
     }
   }
+
+  return(dataset)
+}
+
+data_preparation_2 <- function(dataset, category) {
 
   #add level overall if category is given as input and has more than 1 category
   if (!is.null(category) && length(unique(dataset[[category]])) >= 2){
     dataset <- data.table::rbindlist(list(dataset, data.table::copy(dataset)[, (category) := "_overall"]))
-    print("The level 'overall' is added as the is more than one category")
+    message("The level 'overall' is added as the is more than one category")
   }
 
   return(dataset)
@@ -65,7 +63,7 @@ data_preparation <- function(dataset, id, start_date, end_date, category, replac
 
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  dataset <- dataset[get(category) != "_overall",]
+  dataset <- dataset[get("category") != "_overall",]
 
   # Create list of unique not missing categories
   unique_cat <- as.list(unique(dataset[[category]]))
@@ -73,6 +71,8 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
 
   # Create the combinations of pairs of categories
   permut <- t(utils::combn(unique_cat, 2))
+
+  export_df <- list()
 
   # Cycle for each pair
   for (i in seq_len(nrow(permut))) {
@@ -86,11 +86,14 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
     exs_2 <- paste0("exit_spell_category_", p_2)
 
     #	For each pair of values A and B, create two temporary datasets
-    outputA <- dataset[get(category) == p_1, ][, c("num_spell", category) := NULL]
-    data.table::setnames(outputA, c("entry_spell_category", "exit_spell_category"), c(ens_1, exs_1))
+    to_drop <- c(category)
+    if ("num_spell" %in% colnames(dataset)) to_drop <- c("num_spell", to_drop)
 
-    outputB <- dataset[get(category) == p_2, ][, c("num_spell", category) := NULL]
-    data.table::setnames(outputB, c("entry_spell_category", "exit_spell_category"), c(ens_2, exs_2))
+    outputA <- dataset[get("category") == p_1, ][, (to_drop) := NULL]
+    data.table::setnames(outputA, c(start_date, end_date), c(ens_1, exs_1))
+
+    outputB <- dataset[get("category") == p_2, ][, (to_drop) := NULL]
+    data.table::setnames(outputB, c(start_date, end_date), c(ens_2, exs_2))
 
     #	Perform a join multi-to-multi of the two datasets
     CAT <- merge(outputA, outputB, by = c(id), all = T, allow.cartesian = T)
@@ -100,17 +103,20 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
     if (nrow(CAT) == 0) next
 
     # Calculate overlapping spells between categories
-    CAT <- CAT[, .(entry_spell_category = pmax(get(ens_1), get(ens_2)),
+    CAT <- CAT[, .(id, entry_spell_category = pmax(get(ens_1), get(ens_2)),
                    exit_spell_category = pmin(get(exs_1), get(exs_2)))]
     CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
 
     select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
-    CAT <- CAT[order(c(id, "entry_spell_category"))][, select_col, with = FALSE]
+    data.table::setorderv(CAT, c(get(id), "entry_spell_category", "exit_spell_category"))
+    CAT <- CAT[, select_col, with = FALSE]
 
     CAT <- CAT[, num_spell := data.table::rowid(get(..id))]
 
-    export_df <- rbind(export_df, CAT)
+    export_df <- append(export_df, list(CAT))
   }
+
+  export_df <- data.table::rbindlist(export_df)
 
   return(export_df)
 
@@ -143,6 +149,7 @@ CreateSpells.internal <- function(dataset, id, start_date, end_date, category, g
   #compute the number of spell
   dataset[, num_spell := data.table::fifelse(row_id > 1 & get(..start_date) <= lag_end_date + gap_allowed, 0, 1)]
   dataset[, num_spell := cumsum(num_spell), by = grouping_vars]
+  dataset[, num_spell := as.integer(num_spell)]
 
   #group by num spell and compute min and max date for each one
   keep_col <- c(grouping_vars, "num_spell", "entry_spell_category", "exit_spell_category")

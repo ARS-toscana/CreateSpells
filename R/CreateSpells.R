@@ -27,7 +27,8 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
   if (!only_overlaps) {
 
-    dataset <- data_preparation(dataset, id, start_date, end_date, category, replace_missing_end_date)
+    dataset <- data_preparation(dataset, start_date, end_date, replace_missing_end_date)
+    dataset <- data_preparation_2(dataset, category)
 
     dataset <- CreateSpells.internal(dataset, id, start_date, end_date, category, gap_allowed)
     assign("output_spells_category", dataset)
