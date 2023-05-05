@@ -1,5 +1,5 @@
 test_that("double overlap", {
-  expect_identical(test_overlap.internal(~id, ~start_date,  ~end_date, ~category,
+  expect_identical(test_overlap.internal_2(~id, ~start_date,  ~end_date, ~category,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20110101", "20200101",       "b"),
                    row_wise_dt(~id,~entry_spell_category,~exit_spell_category, ~category,~num_spell,

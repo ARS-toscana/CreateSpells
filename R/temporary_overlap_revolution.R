@@ -1,4 +1,4 @@
-overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+overlap.internal_2 <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   dataset <- dataset[get("category") != "_overall",]
 
@@ -29,7 +29,7 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
 
     # Copy the dataset and exit_spell_category add 1 day to get the first day without events
     dataset_filtered_end <- copy(dataset_filtered)[, get(start_date) := NULL]
-    dataset_filtered_end[, (end_date) := get(end_date) + 1]
+    dataset_filtered_end[, (end_date) := get(..end_date) + 1]
     setnames(dataset_filtered_end, end_date, "date")
 
     # In dataset remove exit_spell_category
@@ -40,26 +40,27 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
     dataset_filtered <- rbindlist(list(dataset_filtered[, contribution := 1],
                                        dataset_filtered_end[, contribution := -1]))
 
-    dataset_filtered <- dataset_filtered[, (category) := paste(p_1, p_2, sep = "_")]
-
     # Sum contribution/value_of_variable in each date for each person
-    dataset_filtered <- dataset_filtered[, .(contribution = sum(contribution)), by = c("person_id", "date")]
+    dataset_filtered <- dataset_filtered[, .(contribution = sum(contribution)), by = c(id, "date")]
 
     # Order by person and date the take the cumulative sum
-    setorder(dataset_filtered, "person_id", "date")
-    dataset_filtered <- dataset_filtered[, .(date, contribution = cumsum(contribution)), by = "person_id"]
-    setnames(D3_TD_list, "contribution", "value_of_variable")
+    setorder(dataset_filtered, id, "date")
+    dataset_filtered <- dataset_filtered[, .(date, contribution = cumsum(contribution)), by = id]
+    setnames(dataset_filtered, "contribution", "value_of_variable")
 
     #Add end date of period
-    dataset_filtered <- dataset_filtered[, exit_spell_category = shift(date, type = "lead"), by = "person_id"]
-    setnames(D3_TD_list, "date", "entry_spell_category")
+    dataset_filtered <- dataset_filtered[, exit_spell_category := data.table::shift(date, type = "lead"), by = id]
+    setnames(dataset_filtered, "date", "entry_spell_category")
+
+    dataset_filtered <- dataset_filtered[value_of_variable > 1, ]
+    dataset_filtered <- dataset_filtered[, (category) := paste(p_1, p_2, sep = "_")]
 
     select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
-    CAT <- CAT[, select_col, with = FALSE]
+    dataset_filtered <- dataset_filtered[, select_col, with = FALSE]
 
-    CAT <- CAT[, num_spell := data.table::rowid(get(..id))]
+    dataset_filtered <- dataset_filtered[, num_spell := data.table::rowid(get(..id))]
 
-    export_df <- append(export_df, list(CAT))
+    export_df <- append(export_df, list(dataset_filtered))
   }
 
   export_df <- data.table::rbindlist(export_df)
