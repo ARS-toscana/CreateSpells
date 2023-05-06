@@ -16,7 +16,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 
   # Check if x is/can be a date
   token_is_ymd_or_date <- vetr::vet_token(is.ymd_or_date(.),
-                                   "%s should be a date or string/integer interpretable by lubridate::ymd (Error 02)")
+                                          "%s should be a date or string/integer interpretable by lubridate::ymd (Error 02)")
 
   # Check if x is a column of dataset
   token_col <- vetr::vet_token(. %in% colnames(dataset),
@@ -60,12 +60,12 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 
   # Check if x is/can be a date
   token_is_ymd_or_start_date <- vetr::vet_token(is.ymd_or_date(.[[start_date]]),
-                                          "All start dates in %s should be a date or string/integer
+                                                "All start dates in %s should be a date or string/integer
                                           interpretable by lubridate::ymd (Error 08)")
 
   # Check if x is/can be a date
   token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[end_date]]),
-                                          "All end dates in %s  should be a date or string/integer
+                                              "All end dates in %s  should be a date or string/integer
                                           interpretable by lubridate::ymd (Error 09)")
 
   # Check for periods with end date before start date
@@ -124,7 +124,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
 
   # Check if there are any missing dates
   token_missing_end_dates <- vetr::vet_token(!is.na(.[[end_date]]),
-                                               "Some end dates of %s are missing, please update those values or
+                                             "Some end dates of %s are missing, please update those values or
                                                deleted the records (Error 03)")
 
   # Check if x is/can be a date
@@ -151,7 +151,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
   # Check for overlapping periods with the same categories
   token_overlapping_period <- vetr::vet_token(has.overlaps_within_categories(., id, start_date, end_date,
                                                                              category, gap_allowed),
-                                             "Inside %s, there are overlapping observation period/s within categories (Error 07)")
+                                              "Inside %s, there are overlapping observation periods within categories (Error 07)")
   vetr::vet(token_overlapping_period, dataset, stop = T)
 
   return()
