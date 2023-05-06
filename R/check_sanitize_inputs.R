@@ -37,7 +37,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
                                    "it is set to %s, however neither overlap or only_overlaps
                                    argument are set to TRUE (Error 06)")
 
-  # Check if dataset is a data.frame then trasform it to data.table
+  # Check if dataset is a data.frame then transform it to data.table
   vetr::vetr(dataset = data.frame())
   dataset = data.table::as.data.table(dataset)
 
@@ -66,6 +66,55 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
   # Check if x is/can be a date
   token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[end_date]]),
                                           "All end dates in %s  should be a date or string/integer
+                                          interpretable by lubridate::ymd (Error 09)")
+
+  # Check for periods with end date before start date
+  vetr::vet(token_missing_start_dates && token_is_ymd_or_start_date && token_is_ymd_or_end_date, dataset, stop = T)
+
+  # Check for periods with end date before start date
+  token_impossible_period <- vetr::vet_token(all(.[[start_date]] <= .[[end_date]], na.rm = T),
+                                             paste("Inside %s, there are observation period/s with",
+                                                   deparse(substitute(start_date)),
+                                                   "less than", deparse(substitute(end_date)), " (Error 10)"))
+  vetr::vet(token_impossible_period, dataset, stop = T)
+
+  return()
+}
+
+
+check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category, gap_allowed = 1) {
+
+  . <- NULL
+
+  # Check if x is a column of dataset
+  token_col <- vetr::vet_token(. %in% colnames(dataset),
+                               paste("%s is not a column in", deparse(substitute(dataset)), "(Error 03)"))
+
+  # Check if dataset is a data.frame then transform it to data.table
+  vetr::vetr(dataset = data.frame())
+  dataset = data.table::as.data.table(dataset)
+
+  vetr::vetr(
+    id = character(1L) && token_col,
+    start_date = character(1L) && token_col,
+    end_date = character(1L) && token_col,
+    category = NULL || character(1L) && token_col,
+    gap_allowed = integer(1L)
+  )
+
+  # Check if there are any missing dates
+  token_missing_start_dates <- vetr::vet_token(!is.na(.[[start_date]]),
+                                               "Some start dates of %s are missing, please update those values or
+                                               deleted the records (Error 07)")
+
+  # Check if x is/can be a date
+  token_is_ymd_or_start_date <- vetr::vet_token(is.ymd_or_date(.[[start_date]]),
+                                                "All start dates in %s should be a date or string/integer
+                                          interpretable by lubridate::ymd (Error 08)")
+
+  # Check if x is/can be a date
+  token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[end_date]]),
+                                              "All end dates in %s  should be a date or string/integer
                                           interpretable by lubridate::ymd (Error 09)")
 
   # Check for periods with end date before start date
