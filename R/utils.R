@@ -63,7 +63,7 @@ data_preparation_2 <- function(dataset, category) {
 
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  check_sanitize_inputs_2(dataset, id, start_date, end_date, category, gap_allowed)
+  check_sanitize_inputs_2(dataset, id, start_date, end_date, category)
 
   dataset <- dataset[get("category") != "_overall",]
 
