@@ -36,10 +36,9 @@ test_overlap.internal <- function(..., id = "id", start_date = "start_date", end
 }
 
 test_overlap.internal_2 <- function(..., id = "id", start_date = "start_date", end_date = "end_date",
-                                  category = "category", gap_allowed = 1) {
+                                    category = "category") {
   dataset <- row_wise_dt(...)
-  overlap.internal_2(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
-                   category = category, gap_allowed = gap_allowed)
+  overlap.internal_2(dataset = dataset, id = id, start_date = start_date, end_date = end_date, category = category)
 }
 
 test_data_preparation <- function(..., start_date = "start_date", end_date = "end_date",
