@@ -82,7 +82,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 }
 
 
-check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category, gap_allowed = 1) {
+check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category) {
 
   . <- NULL
 
@@ -94,7 +94,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
   }
 
   # Function to check if dataset has overlaps within categories (unwanted)
-  has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+  has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category) {
     dataset[, end_date := data.table::shift(end_date), by = c(get(id), get(category))]
     return(nrow(dataset[!is.na(end_date) & start_date >= end_date, ]) == 0)
   }
@@ -111,8 +111,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
     id = character(1L) && token_col,
     start_date = character(1L) && token_col,
     end_date = character(1L) && token_col,
-    category = NULL || character(1L) && token_col,
-    gap_allowed = integer(1L)
+    category = NULL || character(1L) && token_col
   )
 
   data.table::setorder(dataset, id, start_date)
@@ -150,7 +149,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
 
   # Check for overlapping periods with the same categories
   token_overlapping_period <- vetr::vet_token(has.overlaps_within_categories(., id, start_date, end_date,
-                                                                             category, gap_allowed),
+                                                                             category),
                                               "Inside %s, there are overlapping observation periods within categories (Error 07)")
   vetr::vet(token_overlapping_period, dataset, stop = T)
 
