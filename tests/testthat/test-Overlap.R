@@ -45,6 +45,14 @@ test_that("Arguments with same names or different ones", {
                                          "id",  "20110101", "20200101",       "b"),
                    row_wise_dt(~id,~entry_spell_category,~exit_spell_category,   ~category,~num_spell,
                                "id",          "20110101",          "20190101","category_b",         1))
+
+  expect_identical(test_overlap.internal_2(  ~a,~op_start_date,~op_end_date,        ~d,
+                                           "id",    "20100101",  "20190101","category",
+                                           "id",    "20110101",  "20200101",       "b",
+                                           id = "a", start_date = "op_start_date",
+                                           end_date = "op_end_date", category = "d"),
+                   row_wise_dt( ~a,~entry_spell_category,~exit_spell_category,   ~category,~num_spell,
+                               "id",          "20110101",          "20190101","category_b",         1))
 })
 
 test_that("reorder periods", {
