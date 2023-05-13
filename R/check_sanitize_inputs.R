@@ -95,8 +95,8 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
 
   # Function to check if dataset has overlaps within categories (unwanted)
   has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category) {
-    dataset[, end_date := data.table::shift(end_date), by = c(get(id), get(category))]
-    return(nrow(dataset[!is.na(end_date) & start_date >= end_date, ]) == 0)
+    dataset[, (end_date) := data.table::shift(get(..end_date)), by = c(id, category)]
+    return(nrow(dataset[!is.na(get("end_date")) & get("start_date") <= get("end_date"), ]) == 0)
   }
 
   # Check if x is a column of dataset
@@ -114,7 +114,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
     category = NULL || character(1L) && token_col
   )
 
-  data.table::setorder(dataset, id, start_date)
+  data.table::setorderv(dataset, c(id, start_date))
 
   # Check if there are any missing dates
   token_missing_start_dates <- vetr::vet_token(!is.na(.[[start_date]]),
