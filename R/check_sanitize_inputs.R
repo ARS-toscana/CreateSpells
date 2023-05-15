@@ -111,7 +111,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
     id = character(1L) && token_col,
     start_date = character(1L) && token_col,
     end_date = character(1L) && token_col,
-    category = NULL || character(1L) && token_col
+    category = character(1L) && token_col
   )
 
   data.table::setorderv(dataset, c(id, start_date))
