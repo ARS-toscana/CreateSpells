@@ -140,6 +140,9 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
   vetr::vet(token_missing_start_dates && token_missing_end_dates && token_is_ymd_or_start_date && token_is_ymd_or_end_date,
             dataset, stop = T)
 
+  dataset[, (start_date) := lubridate::ymd(get(..start_date))]
+  dataset[, (end_date) := lubridate::ymd(get(..end_date))]
+
   # Check for periods with end date before start date
   token_impossible_period <- vetr::vet_token(all(.[[start_date]] <= .[[end_date]], na.rm = T),
                                              paste("Inside %s, there are observation period/s with",
