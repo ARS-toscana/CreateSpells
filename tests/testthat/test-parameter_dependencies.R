@@ -7,6 +7,8 @@ test_that("Error 02 if replace_missing_end_date is not a date", {
   test_error_type(replace_missing_end_date = 123456, error_include = "Error 02")
   test_error_type(replace_missing_end_date = "123456", error_include = "Error 02")
   test_error_type(replace_missing_end_date = "abcabc", error_include = "Error 02")
+  expect_no_error_with_defaults(replace_missing_end_date = 20100101)
+  expect_no_error_with_defaults(replace_missing_end_date = "20100101")
   expect_no_error_with_defaults(replace_missing_end_date = lubridate::ymd("20100101"))
 })
 
@@ -90,7 +92,6 @@ test_that("Error 09 some end dates are not dates or ymd format", {
 
 
 test_that("Error 01 if specified column name is not in dataset", {
-
   test_error_type_2(id = "a", error_include = "Error 01")
   expect_no_error_with_defaults_2(id = "id")
 
@@ -103,4 +104,77 @@ test_that("Error 01 if specified column name is not in dataset", {
   test_error_type_2(category = "a", error_include = "Error 01")
   # expect_no_error_with_defaults_2(category = NULL)
   expect_no_error_with_defaults_2(category = "op_meaning")
+})
+
+test_that("Error 02 if some start dates are missing", {
+  test_data_tmp <- test_data_2
+  test_data_tmp[1, "op_start_date"] <- NA
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 02")
+})
+
+test_that("Error 02 if some start dates are missing", {
+  test_data_tmp <- test_data_2
+  test_data_tmp[1, "op_start_date"] <- NA
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 02")
+})
+
+test_that("Error 03 if some end dates are missing", {
+  test_data_tmp <- test_data_2
+  test_data_tmp[1, "op_end_date"] <- NA
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 03")
+})
+
+test_that("Error 04 if some start dates are not interpretable as dates", {
+  test_data_tmp <- test_data_2
+  test_data_tmp$op_start_date <- as.integer(test_data_tmp$op_start_date)
+  test_data_tmp[1, "op_start_date"] <- 123456
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 04")
+
+  test_data_tmp[1, "op_start_date"] <- 20100101
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+
+  test_data_tmp$op_start_date <- as.character(test_data_tmp$op_start_date)
+  test_data_tmp[1, "op_start_date"] <- "123456"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 04")
+
+  test_data_tmp[1, "op_start_date"] <- "abcabc"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 04")
+
+  test_data_tmp[1, "op_start_date"] <- "20100101"
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+
+  test_data_tmp$op_start_date <- lubridate::ymd(test_data_tmp$op_start_date)
+  test_data_tmp[1, "op_start_date"] <- lubridate::ymd("20100101")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+})
+
+test_that("Error 05 if some end dates are not interpretable as dates", {
+  test_data_tmp <- test_data_2
+  test_data_tmp$op_end_date <- as.integer(test_data_tmp$op_end_date)
+  test_data_tmp[1, "op_end_date"] <- 123456
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 05")
+
+  test_data_tmp[1, "op_end_date"] <- 20100101
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+
+  test_data_tmp$op_end_date <- as.character(test_data_tmp$op_end_date)
+  test_data_tmp[1, "op_end_date"] <- "123456"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 05")
+
+  test_data_tmp[1, "op_end_date"] <- "abcabc"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 05")
+
+  test_data_tmp[1, "op_end_date"] <- "20100101"
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+
+  test_data_tmp$op_end_date <- lubridate::ymd(test_data_tmp$op_end_date)
+  test_data_tmp[1, "op_end_date"] <- lubridate::ymd("20100101")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+})
+
+test_that("Error 06 if some start dates are after their respective end dates", {
+  test_data_tmp <- test_data_2
+  test_data_tmp[1, "op_start_date"] <- "20200101"
+  test_data_tmp[1, "op_end_date"] <- "20100101"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 06")
 })
