@@ -86,3 +86,21 @@ test_that("Error 09 some end dates are not dates or ymd format", {
   expect_no_error_with_defaults(dataset = row_wise_dt(~id, ~op_start_date, ~op_end_date, ~op_meaning,
                                                       "a",     "20200101",   "20200101",         "a"))
 })
+
+
+
+test_that("Error 01 if specified column name is not in dataset", {
+
+  test_error_type_2(id = "a", error_include = "Error 01")
+  expect_no_error_with_defaults_2(id = "id")
+
+  test_error_type_2(start_date = "a", error_include = "Error 01")
+  expect_no_error_with_defaults_2(start_date = "op_start_date")
+
+  test_error_type_2(end_date = "a", error_include = "Error 01")
+  expect_no_error_with_defaults_2(end_date = "op_end_date")
+
+  test_error_type_2(category = "a", error_include = "Error 01")
+  # expect_no_error_with_defaults_2(category = NULL)
+  expect_no_error_with_defaults_2(category = "op_meaning")
+})

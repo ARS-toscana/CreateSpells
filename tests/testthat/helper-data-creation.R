@@ -31,3 +31,4 @@ create_test_df <- function() {
 }
 
 test_data <- create_test_df()
+test_data_2 <- test_data[!is.na(test_data$op_end_date), ]
