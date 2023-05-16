@@ -34,3 +34,9 @@ test_data <- create_test_df()
 test_data_2 <- test_data[!is.na(test_data$op_end_date) &
                            test_data$to_use_comment %in% c("single", "partial overlap", "disjoint", "exist, complete overlap",
                                                            "exist, between disjoint", "not exist in a or b"), ]
+test_data_3 <- data.table::copy(test_data)
+data.table::setnames(test_data_3, c("id", "op_start_date", "op_end_date", "op_meaning"),
+                     c("id", "start_date", "end_date", "category"))
+test_data_4 <- data.table::copy(test_data_2)
+data.table::setnames(test_data_4, c("id", "op_start_date", "op_end_date", "op_meaning"),
+                     c("id", "start_date", "end_date", "category"))

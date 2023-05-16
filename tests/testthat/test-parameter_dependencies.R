@@ -1,6 +1,8 @@
 test_that("Error 01 if replace_missing_end_date is missing", {
   test_error_type(replace_missing_end_date = NA, error_include = "Error 01")
+  test_error_type(dataset = test_data_3, replace_missing_end_date = NA, error_include = "Error 01")
   expect_no_error_with_defaults(replace_missing_end_date = "20100101")
+  expect_no_error_with_defaults(dataset = test_data_3, replace_missing_end_date = "20100101")
 })
 
 test_that("Error 02 if replace_missing_end_date is not a date", {
