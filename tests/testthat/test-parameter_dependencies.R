@@ -178,3 +178,11 @@ test_that("Error 06 if some start dates are after their respective end dates", {
   test_data_tmp[1, "op_end_date"] <- "20100101"
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 06")
 })
+
+test_that("Error 07 if a person has overlapping periods within categories", {
+  test_data_tmp <- test_data_2
+  test_data_tmp[1, "id"] <- "a2"
+  test_data_tmp[1, "op_start_date"] <- "20110101"
+  test_data_tmp[1, "op_end_date"] <- "20210101"
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 07")
+})
