@@ -157,7 +157,8 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
   # Check for overlapping periods with the same categories
   token_overlapping_period <- vetr::vet_token(has.overlaps_within_categories(., id, start_date, end_date,
                                                                              category, gap_allowed),
-                                              "Inside %s, there are overlapping observation periods within categories (Error 07)")
+                                              "Inside %s, there are overlapping observation periods within categories (Error 07),
+                                              This error may be also caused by setting the parameter gap_allowed with different values in CreateSpells and CreateOverlap")
   vetr::vet(token_overlapping_period, data.table::as.data.table(dataset), stop = T)
 
   return()
