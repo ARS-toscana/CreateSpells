@@ -82,7 +82,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 }
 
 
-check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category) {
+check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   . <- NULL
 
@@ -94,8 +94,9 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
   }
 
   # Function to check if dataset has overlaps within categories (unwanted)
-  has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category) {
+  has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category, gap_allowed) {
     dataset[, (end_date) := data.table::shift(get(..end_date)), by = c(id, category)]
+    dataset[, (end_date) := get(..end_date) - gap_allowed]
 
     prev_env <- environment(NULL)
     return(nrow(dataset[!is.na(get(prev_env$end_date)) & get(prev_env$start_date) <= get(prev_env$end_date)]) == 0)
@@ -113,7 +114,8 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
     id = character(1L) && token_col,
     start_date = character(1L) && token_col,
     end_date = character(1L) && token_col,
-    category = character(1L) && token_col
+    category = character(1L) && token_col,
+    gap_allowed = integer(1L)
   )
 
   data.table::setorderv(dataset, c(id, start_date))
@@ -154,7 +156,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category)
 
   # Check for overlapping periods with the same categories
   token_overlapping_period <- vetr::vet_token(has.overlaps_within_categories(., id, start_date, end_date,
-                                                                             category),
+                                                                             category, gap_allowed),
                                               "Inside %s, there are overlapping observation periods within categories (Error 07)")
   vetr::vet(token_overlapping_period, data.table::as.data.table(dataset), stop = T)
 

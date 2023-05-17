@@ -23,18 +23,18 @@ test_error_type_3 <- function(dataset = test_data_3, id = "id", start_date = "st
 }
 
 test_error_type_2 <- function(dataset = test_data_2, id = "person_id", start_date = "op_start_date",
-                              end_date = "op_end_date", category = "op_meaning",
+                              end_date = "op_end_date", category = "op_meaning", gap_allowed = 1,
                               error_include) {
   eval(bquote(expect_error(check_sanitize_inputs_2(dataset = dataset, id = id, start_date = start_date,
-                                                 end_date = end_date, category = category),
+                                                 end_date = end_date, category = category, gap_allowed = gap_allowed),
                            regexp = error_include)))
 }
 
 test_error_type_4 <- function(dataset = test_data_4, id = "id", start_date = "start_date",
-                              end_date = "end_date", category = "category",
+                              end_date = "end_date", category = "category", gap_allowed = 1,
                               error_include) {
   eval(bquote(expect_error(check_sanitize_inputs_2(dataset = dataset, id = id, start_date = start_date,
-                                                   end_date = end_date, category = category),
+                                                   end_date = end_date, category = category, gap_allowed = gap_allowed),
                            regexp = error_include)))
 }
 
@@ -61,29 +61,29 @@ expect_no_error_with_defaults_3 <- function(dataset = test_data_3, id = "id", st
 }
 
 expect_no_error_with_defaults_2 <- function(dataset = test_data_2, id = "person_id", start_date = "op_start_date",
-                                          end_date = "op_end_date", category = "op_meaning") {
+                                          end_date = "op_end_date", category = "op_meaning", gap_allowed = 1) {
   expect_no_error(check_sanitize_inputs_2(dataset = dataset, id = id, start_date = start_date,
-                                        end_date = end_date, category = category))
+                                        end_date = end_date, category = category, gap_allowed = gap_allowed))
 }
 
 expect_no_error_with_defaults_4 <- function(dataset = test_data_4, id = "id", start_date = "start_date",
-                                            end_date = "end_date", category = "category") {
+                                            end_date = "end_date", category = "category", gap_allowed = 1) {
   expect_no_error(check_sanitize_inputs_2(dataset = dataset, id = id, start_date = start_date,
-                                          end_date = end_date, category = category))
+                                          end_date = end_date, category = category, gap_allowed = gap_allowed))
 }
 
-test_CreateSpells.internal <- function(..., id = "id", start_date = "start_date", end_date = "end_date",
+test_CreateSpells.internal <- function(..., id = "person_id", start_date = "op_start_date", end_date = "op_end_date",
                                        category = NULL, gap_allowed = 1) {
   dataset <- row_wise_dt(...)
   CreateSpells.internal(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
                         category = category, gap_allowed = gap_allowed)
 }
 
-test_overlap.internal <- function(..., id = "id", start_date = "start_date", end_date = "end_date",
-                                  category = "category", gap_allowed = 1) {
+test_overlap.internal <- function(..., id = "person_id", start_date = "op_start_date", end_date = "op_end_date",
+                                  category = "meaning") {
   dataset <- row_wise_dt(...)
-  overlap.internal(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
-                   category = category, gap_allowed = gap_allowed)
+  overlap.internal_2(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
+                   category = category)
 }
 
 test_overlap.internal_2 <- function(..., id = "id", start_date = "start_date", end_date = "end_date",
