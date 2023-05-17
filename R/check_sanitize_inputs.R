@@ -96,7 +96,7 @@ check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category,
   # Function to check if dataset has overlaps within categories (unwanted)
   has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category, gap_allowed) {
     dataset[, (end_date) := data.table::shift(get(..end_date)), by = c(id, category)]
-    dataset[, (end_date) := get(..end_date) - gap_allowed]
+    dataset[, (end_date) := get(..end_date) + gap_allowed]
 
     prev_env <- environment(NULL)
     return(nrow(dataset[!is.na(get(prev_env$end_date)) & get(prev_env$start_date) <= get(prev_env$end_date)]) == 0)
