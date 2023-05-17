@@ -54,7 +54,7 @@ test_that("replace_missing_end_date functionality (and Warning 01)", {
 
 test_that("Other columns are kept", {
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                                         "a",  "20100101", "20200101",      "a"))
   tmp_result <- suppressMessages(data_preparation(dataset = tmp_data, start_date = "op_start_date",
                                                   end_date = "op_end_date", replace_missing_end_date = 20150101))
@@ -65,7 +65,7 @@ test_that("Other columns are kept", {
                                                     end_date = "end_date", replace_missing_end_date = 20150101))
   expect_identical(colnames(tmp_result), colnames(tmp_data))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                                         "a",  "20100101",         NA,      "a"))
   tmp_result <- suppressMessages(data_preparation(dataset = tmp_data, start_date = "op_start_date", end_date = "op_end_date",
                                                   replace_missing_end_date = 20150101))
@@ -76,7 +76,7 @@ test_that("Other columns are kept", {
                                                   replace_missing_end_date = 20150101))
   expect_identical(colnames(tmp_result), colnames(tmp_data))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                                         "a",  "20100101", "20200101",      "a",
                                                         "a",  "20200101",         NA,      "a"))
   tmp_result <- suppressMessages(data_preparation(dataset = tmp_data, start_date = "op_start_date", end_date = "op_end_date",
@@ -103,11 +103,11 @@ test_that("Arguments with same names or different ones", {
 
 test_that("Test category argument", {
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "a",      "a"))
-  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning")),
-                   data.table::as.data.table(tibble::tribble(~person_id,~meaning,
+  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning")),
+                   data.table::as.data.table(tibble::tribble(~person_id,~op_meaning,
                                                              "a",     "a",
                                                              "a",     "a")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -118,12 +118,12 @@ test_that("Test category argument", {
                                                              "a",     "a",
                                                              "a",     "a")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "a",      "a",
                                                         "a",      "b"))
-  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning")),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning")),
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "a",
                                                              "a",       "a",
                                                              "a",       "b",
@@ -143,11 +143,11 @@ test_that("Test category argument", {
                                                              "a","_overall",
                                                              "a","_overall")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "b",      "a"))
-  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning")),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning")),
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "a",
                                                              "b",       "a")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -158,11 +158,11 @@ test_that("Test category argument", {
                                                              "a",       "a",
                                                              "b",       "a")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "b",
                                                         "b",      "a"))
-  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning")),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning")),
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "b",
                                                              "b",       "a",
                                                              "a","_overall",
@@ -180,11 +180,11 @@ test_that("Test category argument", {
 
 test_that("Argument category might be NULL", {
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "a",      "a"))
   expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = NULL)),
-                   data.table::as.data.table(tibble::tribble(~person_id,~meaning,
+                   data.table::as.data.table(tibble::tribble(~person_id,~op_meaning,
                                                              "a",     "a",
                                                              "a",     "a")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -195,11 +195,11 @@ test_that("Argument category might be NULL", {
                                                              "a",     "a",
                                                              "a",     "a")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "a",      "b"))
   expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = NULL)),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "a",
                                                              "a",       "b")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -210,11 +210,11 @@ test_that("Argument category might be NULL", {
                                                              "a",       "a",
                                                              "a",       "b")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "a",
                                                         "b",      "a"))
   expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = NULL)),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "a",
                                                              "b",       "a")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -225,11 +225,11 @@ test_that("Argument category might be NULL", {
                                                              "a",       "a",
                                                              "b",       "a")))
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",      "b",
                                                         "b",      "a"))
   expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = NULL)),
-                   data.table::as.data.table(tibble::tribble(~person_id,  ~meaning,
+                   data.table::as.data.table(tibble::tribble(~person_id,  ~op_meaning,
                                                              "a",       "b",
                                                              "b",       "a")))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
@@ -244,11 +244,11 @@ test_that("Argument category might be NULL", {
 
 test_that("Arguments with same names or different ones 2", {
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
-                                                        "person_id","meaning"))
-  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning")),
-                   data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
-                                                             "person_id","meaning")))
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
+                                                        "person_id","op_meaning"))
+  expect_identical(suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning")),
+                   data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
+                                                             "person_id","op_meaning")))
 
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
                                                         "id","category"))
@@ -259,9 +259,9 @@ test_that("Arguments with same names or different ones 2", {
 
 test_that("Other columns are kept", {
 
-  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~meaning,
+  tmp_data <- data.table::as.data.table(tibble::tribble(~person_id, ~op_meaning,
                                                         "a",       "a"))
-  tmp_result <- suppressMessages(data_preparation_2(dataset = tmp_data, category = "meaning"))
+  tmp_result <- suppressMessages(data_preparation_2(dataset = tmp_data, category = "op_meaning"))
   expect_identical(colnames(tmp_result), colnames(tmp_data))
   tmp_data <- data.table::as.data.table(tibble::tribble(~id, ~category,
                                                         "a",       "a"))

@@ -1,20 +1,20 @@
-test_that("single observation no meaning", {
+test_that("single observation no op_meaning", {
   expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date,
                                               "a",  "20100101", "20200101"),
     row_wise_dt(~person_id,~num_spell,~entry_spell_category,~exit_spell_category,
                 "a",         1,           "20100101",          "20200101"))
 
-  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                               "a",  "20100101", "20200101",      "a"),
     row_wise_dt(~person_id,~num_spell,~entry_spell_category,~exit_spell_category,
                 "a",         1,           "20100101",          "20200101"))
 })
 
-test_that("single observation pass meaning", {
-  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+test_that("single observation pass op_meaning", {
+  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                               "a",  "20100101", "20200101",      "a",
-                                              category = "meaning"),
-                   row_wise_dt(~person_id,~meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+                                              category = "op_meaning"),
+                   row_wise_dt(~person_id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
                                "a",     "a",         1,           "20100101",          "20200101"))
 })
 
@@ -28,17 +28,17 @@ test_that("simple overlap", {
 })
 
 test_that("meanings dependence", {
-  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                               "a",  "20100101", "20150101",      "a",
                                               "a",  "20110101", "20200101",      "a",
-                                              category = "meaning"),
-                   row_wise_dt(~person_id,~meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+                                              category = "op_meaning"),
+                   row_wise_dt(~person_id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
                                "a",     "a",         1,           "20100101",          "20200101"))
-  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                               "a",  "20100101", "20150101",      "a",
                                               "a",  "20110101", "20200101",      "b",
-                                              category = "meaning"),
-                   row_wise_dt(~person_id,~meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+                                              category = "op_meaning"),
+                   row_wise_dt(~person_id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
                                "a",     "a",         1,           "20100101",          "20150101",
                                "a",     "b",         1,           "20110101",          "20200101"))
 })
@@ -157,14 +157,14 @@ test_that("person_id independence", {
                                "b",         1,           "20100101",          "20200101"))
 })
 
-test_that("person_id and meaning independence", {
-  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+test_that("person_id and op_meaning independence", {
+  expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                               "a",  "20100101", "20200101",      "a",
                                               "b",  "20100101", "20200101",      "a",
                                               "a",  "20100101", "20200101",      "b",
                                               "b",  "20100101", "20200101",      "b",
-                                              category = "meaning"),
-                   row_wise_dt(~person_id,~meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+                                              category = "op_meaning"),
+                   row_wise_dt(~person_id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
                                "a",     "a",         1,           "20100101",          "20200101",
                                "a",     "b",         1,           "20100101",          "20200101",
                                "b",     "a",         1,           "20100101",          "20200101",

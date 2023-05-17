@@ -1,5 +1,5 @@
 test_that("double overlap", {
-  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20110101", "20200101",       "b"),
                    row_wise_dt(~person_id,~entry_spell_category,~exit_spell_category, ~category,~num_spell,
@@ -7,7 +7,7 @@ test_that("double overlap", {
 })
 
 test_that("triple overlap", {
-  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20140101", "20160101",       "b",
                                          "a",  "20110101", "20200101",       "c"),
@@ -18,7 +18,7 @@ test_that("triple overlap", {
 })
 
 test_that("triple overlap, two categories", {
-  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20130101", "20160101",       "b",
                                          "a",  "20170101", "20180101",       "b"),
@@ -28,7 +28,7 @@ test_that("triple overlap, two categories", {
 })
 
 test_that("two persons double overlap", {
-  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20110101", "20200101",       "b",
                                          "b",  "20100101", "20140101",       "a",
@@ -50,10 +50,10 @@ test_that("Arguments with same names or different ones", {
 })
 
 test_that("reorder periods", {
-  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+  expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",
                                          "a",  "20110101", "20200101",       "b"),
-                   test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~meaning,
+                   test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20110101", "20200101",       "a",
                                          "a",  "20100101", "20190101",       "b"))
 })
@@ -140,14 +140,14 @@ test_that("reorder periods", {
 #                                "b",         1,           "20100101",          "20200101"))
 # })
 #
-# test_that("id and meaning independence", {
-#   expect_identical(test_overlap.internal(~id, ~start_date,  ~end_date, ~meaning,
+# test_that("id and op_meaning independence", {
+#   expect_identical(test_overlap.internal(~id, ~start_date,  ~end_date, ~op_meaning,
 #                                          "a",  "20100101", "20200101",      "a",
 #                                          "b",  "20100101", "20200101",      "a",
 #                                          "a",  "20100101", "20200101",      "b",
 #                                          "b",  "20100101", "20200101",      "b",
-#                                          category = "meaning"),
-#                    row_wise_dt(~id,~meaning,~num_spell,~entry_spell_category,~exit_spell_category,
+#                                          category = "op_meaning"),
+#                    row_wise_dt(~id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,
 #                                "a",     "a",         1,           "20100101",          "20200101",
 #                                "a",     "b",         1,           "20100101",          "20200101",
 #                                "b",     "a",         1,           "20100101",          "20200101",

@@ -80,7 +80,7 @@ test_CreateSpells.internal <- function(..., id = "person_id", start_date = "op_s
 }
 
 test_overlap.internal <- function(..., id = "person_id", start_date = "op_start_date", end_date = "op_end_date",
-                                  category = "meaning") {
+                                  category = "op_meaning") {
   dataset <- row_wise_dt(...)
   overlap.internal_2(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
                    category = category)
