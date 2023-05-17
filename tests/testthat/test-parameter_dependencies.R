@@ -254,4 +254,38 @@ test_that("Error 07 if a person has overlapping periods within categories", {
   test_data_tmp[1, "op_start_date"] <- "20110101"
   test_data_tmp[1, "op_end_date"] <- "20210101"
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 07")
+
+  test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
+                               "a",  "20100101", "20191231",       "a",
+                               "a",  "20200101", "20250101",       "a")
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = 0)
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = -1)
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = -2)
+
+  test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
+                               "a",  "20100101", "20191231",       "a",
+                               "a",  "20200102", "20250101",       "a")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp)
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = 1)
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = 0)
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = -1)
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = -2)
+
+  test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
+                               "a",  "20100101", "20191231",       "a",
+                               "a",  "20191230", "20250101",       "a")
+  test_error_type_2(dataset = test_data_tmp, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = 0, error_include = "Error 07")
+  test_error_type_2(dataset = test_data_tmp, gap_allowed = -1, error_include = "Error 07")
+  expect_no_error_with_defaults_2(dataset = test_data_tmp, gap_allowed = -2)
+
 })
