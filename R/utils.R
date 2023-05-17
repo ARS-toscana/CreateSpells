@@ -6,8 +6,9 @@ pass_all_arguments <- function(x) {
 
 data_preparation <- function(dataset, start_date, end_date, replace_missing_end_date) {
 
-  dataset[!lubridate::is.Date(get("start_date")), (start_date) := lubridate::ymd(get(..start_date))]
-  dataset[!lubridate::is.Date(get("end_date")), (end_date) := lubridate::ymd(get(..end_date))]
+  prev_env <- environment(NULL)
+  dataset[!lubridate::is.Date(get(prev_env$start_date)), (start_date) := lubridate::ymd(get(..start_date))]
+  dataset[!lubridate::is.Date(get(prev_env$end_date)), (end_date) := lubridate::ymd(get(..end_date))]
   if (any(is.na(dataset[[end_date]]))) {
 
     message("Some end dates are missing")
@@ -15,7 +16,8 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
     if (is.null(replace_missing_end_date)){
       warning("Since parameter 'replace_missing_end_date' has not been specified,
               those periods have been removed from computation of spells  (Warning 01)")
-      dataset <- dataset[!is.na(get("end_date")), ]
+      prev_env <- environment(NULL)
+      dataset <- dataset[!is.na(get(prev_env$end_date)), ]
 
       # nrow_before <- nrow(dataset)
       # dataset <- dataset[get(start_date) <= get(end_date)]
@@ -28,8 +30,10 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
     } else {
       replace_missing_end_date <- lubridate::ymd(replace_missing_end_date)
       message(paste("Replacing missing end date/s with", replace_missing_end_date))
-      dataset[is.na(get("end_date")), (end_date) := replace_missing_end_date]
-      dataset <- dataset[get("start_date") <= get("end_date")]
+
+      prev_env <- environment(NULL)
+      dataset[is.na(get(prev_env$end_date)), (end_date) := replace_missing_end_date]
+      dataset <- dataset[get(prev_env$start_date) <= get(prev_env$end_date)]
       # dataset_missing <- dataset[is.na(get(end_date))][, (end_date) := replace_missing_end_date]
       # dataset <- dataset[!is.na(get(end_date))]
       #
