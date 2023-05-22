@@ -1,6 +1,6 @@
-overlap.internal_2 <- function(dataset, id, start_date, end_date, category, gap_allowed = 1) {
+overlap.internal_2 <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  check_sanitize_inputs_2(dataset, id, start_date, end_date, category, gap_allowed)
+  sanitize_inputs_overlap(dataset, id, start_date, end_date, category, gap_allowed)
 
   dataset <- dataset[get("category") != "_overall",]
   data.table::setnames(dataset, c(start_date, end_date, category),

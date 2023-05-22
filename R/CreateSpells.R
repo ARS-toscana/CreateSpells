@@ -23,7 +23,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
   ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
-  pass_all_arguments("check_sanitize_inputs")
+  pass_all_arguments("sanitize_inputs")
 
   if (!only_overlaps) {
 

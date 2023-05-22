@@ -1,4 +1,4 @@
-check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
+sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
                                   overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1) {
 
   . <- NULL
@@ -82,7 +82,7 @@ check_sanitize_inputs <- function(dataset, id, start_date, end_date, category = 
 }
 
 
-check_sanitize_inputs_2 <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   . <- NULL
 
