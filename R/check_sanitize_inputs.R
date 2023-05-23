@@ -95,6 +95,8 @@ sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category,
 
   # Function to check if dataset has overlaps within categories (unwanted)
   has.overlaps_within_categories <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+
+    data.table::setorderv(dataset, c(id, start_date))
     dataset[, (end_date) := data.table::shift(get(..end_date)), by = c(id, category)]
     dataset[, (end_date) := get(..end_date) + gap_allowed]
 
@@ -118,27 +120,36 @@ sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category,
     gap_allowed = integer(1L)
   )
 
-  data.table::setorderv(dataset, c(id, start_date))
+  # Remove category "_overall"
+  prev_env <- environment(NULL)
+  dataset <- dataset[get(prev_env$category) != "_overall",]
+
+  # Want to calculate overlap but insufficient categories
+  token_n_categories <- vetr::vet_token(length(unique(.[[category]])) > 1,
+                                        "%s does not have enough categories to calculate overlaps,
+                                        two are need '_overall' excluded (Error 02)")
+  # Want to calculate overlap but insufficient categories
+  vetr::vet(token_n_categories, dataset, stop = T)
 
   # Check if there are any missing dates
   token_missing_start_dates <- vetr::vet_token(!is.na(.[[start_date]]),
                                                "Some start dates of %s are missing, please update those values or
-                                               deleted the records (Error 02)")
+                                               deleted the records (Error 03)")
 
   # Check if there are any missing dates
   token_missing_end_dates <- vetr::vet_token(!is.na(.[[end_date]]),
                                              "Some end dates of %s are missing, please update those values or
-                                               deleted the records (Error 03)")
+                                               deleted the records (Error 04)")
 
   # Check if x is/can be a date
   token_is_ymd_or_start_date <- vetr::vet_token(is.ymd_or_date(.[[start_date]]),
                                                 "All start dates in %s should be a date or string/integer
-                                          interpretable by lubridate::ymd (Error 04)")
+                                          interpretable by lubridate::ymd (Error 05)")
 
   # Check if x is/can be a date
   token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[end_date]]),
                                               "All end dates in %s  should be a date or string/integer
-                                          interpretable by lubridate::ymd (Error 05)")
+                                          interpretable by lubridate::ymd (Error 06)")
 
   # Check for periods with end date before start date
   vetr::vet(token_missing_start_dates && token_missing_end_dates && token_is_ymd_or_start_date && token_is_ymd_or_end_date,
@@ -151,15 +162,15 @@ sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category,
   token_impossible_period <- vetr::vet_token(all(.[[start_date]] <= .[[end_date]], na.rm = T),
                                              paste("Inside %s, there are observation period/s with",
                                                    deparse(substitute(start_date)),
-                                                   "less than", deparse(substitute(end_date)), " (Error 06)"))
+                                                   "less than", deparse(substitute(end_date)), " (Error 07)"))
   vetr::vet(token_impossible_period, dataset, stop = T)
 
   # Check for overlapping periods with the same categories
   token_overlapping_period <- vetr::vet_token(has.overlaps_within_categories(., id, start_date, end_date,
                                                                              category, gap_allowed),
-                                              "Inside %s, there are overlapping observation periods within categories (Error 07),
+                                              "Inside %s, there are overlapping observation periods within categories (Error 08),
                                               This error may be also caused by setting the parameter gap_allowed with different values in CreateSpells and CreateOverlap")
   vetr::vet(token_overlapping_period, data.table::as.data.table(dataset), stop = T)
 
-  return()
+  return(dataset)
 }
