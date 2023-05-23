@@ -188,4 +188,10 @@ test_that("Arguments with same names or different ones", {
                                               category = "category"),
                    row_wise_dt(~id,  ~category,~num_spell,~entry_spell_category,~exit_spell_category,
                                "id","category",         1,           "20100101",          "20200101"))
+
+  expect_identical(test_CreateSpells.internal(~id, ~start_date,  ~end_date, ~category,
+                                              "id", "20100101", "20200101","category",
+                                              id = "id", start_date = "start_date", end_date = "end_date"),
+                   row_wise_dt(~id,  ~num_spell,~entry_spell_category,~exit_spell_category,
+                               "id",          1,           "20100101",          "20200101"))
 })
