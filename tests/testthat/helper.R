@@ -101,12 +101,10 @@ test_data_preparation_special_names <- function(..., start_date = "start_date", 
 row_wise_dt <- function(...) {
   tmp <- data.table::as.data.table(tibble::tribble(...))
 
-  start_col <- intersect(colnames(tmp),
-                         c("entry_spell_category", "start_date", "op_start_date"))
+  start_col <- intersect(colnames(tmp), c("entry_spell_category", "start_date", "op_start_date"))
   if (length(start_col) != 0) tmp[, (start_col) := lubridate::ymd(get(..start_col))]
 
-  end_col <- intersect(colnames(tmp),
-                       c("exit_spell_category", "end_date", "op_end_date"))
+  end_col <- intersect(colnames(tmp), c("exit_spell_category", "end_date", "op_end_date"))
   if (length(end_col) != 0) tmp[, (end_col) := lubridate::ymd(get(..end_col))]
 
   if ("num_spell" %in% colnames(tmp)) {
@@ -114,4 +112,12 @@ row_wise_dt <- function(...) {
   }
 
   return(tmp)
+}
+
+transform_to_special_names <- function(tmp) {
+  start_col <- intersect(colnames(tmp), c("entry_spell_category", "op_start_date"))
+  data.table::setnames(tmp, start_col, "start_date")
+
+  end_col <- intersect(colnames(tmp), c("exit_spell_category", "op_end_date"))
+  data.table::setnames(tmp, end_col, "end_date")
 }
