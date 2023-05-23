@@ -175,39 +175,51 @@ test_that("Error 01 if specified column name is not in dataset", {
   expect_no_error_with_defaults_overlap_special_names(category = "category")
 })
 
-test_that("Error 02 if some start dates are missing", {
-  test_data_tmp <- test_data_overlap
-  test_data_tmp[1, "op_start_date"] <- NA
+test_that("Error 02 if less than two categories", {
+  test_data_tmp <- data.table::as.data.table(test_data_overlap)
+  test_data_tmp[, op_meaning := "a"]
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 02")
+
+  test_data_tmp <- data.table::as.data.table(test_data_overlap)
+  test_data_tmp[op_meaning %in% c("a", "b"), op_meaning := "_overall"]
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 02")
+
+  test_data_tmp <- data.table::as.data.table(test_data_overlap)
+  test_data_tmp[op_meaning == "a", op_meaning := "_overall"]
+  expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
+
+  test_data_tmp <- data.table::as.data.table(test_data_overlap)
+  test_data_tmp[, op_meaning := "_overall"]
   test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 02")
 })
 
-test_that("Error 02 if some start dates are missing", {
+test_that("Error 03 if some start dates are missing", {
   test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_start_date"] <- NA
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 02")
-})
-
-test_that("Error 03 if some end dates are missing", {
-  test_data_tmp <- test_data_overlap
-  test_data_tmp[1, "op_end_date"] <- NA
   test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 03")
 })
 
-test_that("Error 04 if some start dates are not interpretable as dates", {
+test_that("Error 04 if some end dates are missing", {
+  test_data_tmp <- test_data_overlap
+  test_data_tmp[1, "op_end_date"] <- NA
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 04")
+})
+
+test_that("Error 05 if some start dates are not interpretable as dates", {
   test_data_tmp <- test_data_overlap
   test_data_tmp$op_start_date <- as.integer(test_data_tmp$op_start_date)
   test_data_tmp[1, "op_start_date"] <- 123456
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 04")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
 
   test_data_tmp[1, "op_start_date"] <- 20100101
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
 
   test_data_tmp$op_start_date <- as.character(test_data_tmp$op_start_date)
   test_data_tmp[1, "op_start_date"] <- "123456"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 04")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
 
   test_data_tmp[1, "op_start_date"] <- "abcabc"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 04")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
 
   test_data_tmp[1, "op_start_date"] <- "20100101"
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
@@ -217,21 +229,21 @@ test_that("Error 04 if some start dates are not interpretable as dates", {
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
 })
 
-test_that("Error 05 if some end dates are not interpretable as dates", {
+test_that("Error 06 if some end dates are not interpretable as dates", {
   test_data_tmp <- test_data_overlap
   test_data_tmp$op_end_date <- as.integer(test_data_tmp$op_end_date)
   test_data_tmp[1, "op_end_date"] <- 123456
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 06")
 
   test_data_tmp[1, "op_end_date"] <- 20100101
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
 
   test_data_tmp$op_end_date <- as.character(test_data_tmp$op_end_date)
   test_data_tmp[1, "op_end_date"] <- "123456"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 06")
 
   test_data_tmp[1, "op_end_date"] <- "abcabc"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 05")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 06")
 
   test_data_tmp[1, "op_end_date"] <- "20100101"
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
@@ -241,51 +253,54 @@ test_that("Error 05 if some end dates are not interpretable as dates", {
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
 })
 
-test_that("Error 06 if some start dates are after their respective end dates", {
+test_that("Error 07 if some start dates are after their respective end dates", {
   test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_start_date"] <- "20200101"
   test_data_tmp[1, "op_end_date"] <- "20100101"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 06")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 07")
 })
 
-test_that("Error 07 if a person has overlapping periods within categories", {
+test_that("Error 08 if a person has overlapping periods within categories", {
   test_data_tmp <- test_data_overlap
   test_data_tmp[1, "person_id"] <- "a2"
   test_data_tmp[1, "op_start_date"] <- "20110101"
   test_data_tmp[1, "op_end_date"] <- "20210101"
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 07")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 08")
 
   test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                "a",  "20100101", "20191231",       "a",
-                               "a",  "20200101", "20250101",       "a")
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
+                               "a",  "20200101", "20250101",       "a",
+                               "a",  "20000101", "20150101",       "b")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 08")
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = 0)
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = -1)
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = -2)
 
   test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                "a",  "20100101", "20191231",       "a",
-                               "a",  "20200102", "20250101",       "a")
+                               "a",  "20200102", "20250101",       "a",
+                               "a",  "20000101", "20150101",       "b")
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp)
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = 1)
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 08")
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = 0)
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = -1)
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = -2)
 
   test_data_tmp <- row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                "a",  "20100101", "20191231",       "a",
-                               "a",  "20191230", "20250101",       "a")
-  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 0, error_include = "Error 07")
-  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = -1, error_include = "Error 07")
+                               "a",  "20191230", "20250101",       "a",
+                               "a",  "20000101", "20150101",       "b")
+  test_error_type_overlap(dataset = test_data_tmp, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 1, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 2, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 3, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = 0, error_include = "Error 08")
+  test_error_type_overlap(dataset = test_data_tmp, gap_allowed = -1, error_include = "Error 08")
   expect_no_error_with_defaults_overlap(dataset = test_data_tmp, gap_allowed = -2)
 
 })
