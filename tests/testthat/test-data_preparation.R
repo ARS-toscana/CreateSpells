@@ -3,7 +3,7 @@ test_that("replace_missing_end_date functionality (and Warning 01)", {
                                                         "a",  "20100101", "20200101",
                                                         "a",  "20100101",         NA)),
                  regexp = "Warning 01")
-  expect_warning(suppressMessages(test_data_preparation_2(~person_id, ~start_date,  ~end_date,
+  expect_warning(suppressMessages(test_data_preparation_special_names(~person_id, ~start_date,  ~end_date,
                                                           "a",  "20100101", "20200101",
                                                           "a",  "20100101",         NA)),
                  regexp = "Warning 01")
@@ -15,7 +15,7 @@ test_that("replace_missing_end_date functionality (and Warning 01)", {
                    row_wise_dt(~person_id,~op_start_date,~op_end_date,
                                "a", "20100101","20200101",
                                "a", "20100101","20150101"))
-  expect_identical(suppressMessages(test_data_preparation_2(~id, ~start_date,  ~end_date,
+  expect_identical(suppressMessages(test_data_preparation_special_names(~id, ~start_date,  ~end_date,
                                                             "a",  "20100101", "20200101",
                                                             "a",  "20100101",         NA,
                                                             replace_missing_end_date = 20150101)),
@@ -30,7 +30,7 @@ test_that("replace_missing_end_date functionality (and Warning 01)", {
                    row_wise_dt(~person_id,~op_start_date, ~op_end_date,
                                "a", "20100101","20200101",
                                "a", "20100101","20190101"))
-  expect_identical(suppressMessages(test_data_preparation_2(~id, ~start_date,  ~end_date,
+  expect_identical(suppressMessages(test_data_preparation_special_names(~id, ~start_date,  ~end_date,
                                                           "a",  "20100101", "20200101",
                                                           "a",  "20100101", "20190101",
                                                           replace_missing_end_date = 20150101)),
@@ -44,7 +44,7 @@ test_that("replace_missing_end_date functionality (and Warning 01)", {
                                                           replace_missing_end_date = 20150101)),
                    row_wise_dt(~person_id,~op_start_date, ~op_end_date,
                                "a", "20100101","20200101"))
-  expect_identical(suppressMessages(test_data_preparation_2(~id, ~start_date,  ~end_date,
+  expect_identical(suppressMessages(test_data_preparation_special_names(~id, ~start_date,  ~end_date,
                                                           "a",  "20100101", "20200101",
                                                           "a",  "20200101",         NA,
                                                           replace_missing_end_date = 20150101)),
