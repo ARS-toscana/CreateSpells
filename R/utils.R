@@ -56,7 +56,7 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
 
 data_preparation_2 <- function(dataset, category) {
 
-  #add level overall if category is given as input and has more than 1 category
+  #add level overall if category is given as input and has at least 2 categories
   if (!is.null(category) && length(unique(dataset[[category]])) >= 2){
     dataset <- data.table::rbindlist(list(dataset, data.table::copy(dataset)[, (category) := "_overall"]))
     message("The level 'overall' is added as the is more than one category")
