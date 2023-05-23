@@ -1,8 +1,8 @@
 test_that("Error 01 if replace_missing_end_date is missing", {
   test_error_type(replace_missing_end_date = NA, error_include = "Error 01")
-  test_error_type_3(dataset = test_data_3, replace_missing_end_date = NA, error_include = "Error 01")
+  test_error_type_3(dataset = test_data_special_names, replace_missing_end_date = NA, error_include = "Error 01")
   expect_no_error_with_defaults(replace_missing_end_date = "20100101")
-  expect_no_error_with_defaults_3(dataset = test_data_3, replace_missing_end_date = "20100101")
+  expect_no_error_with_defaults_3(dataset = test_data_special_names, replace_missing_end_date = "20100101")
 })
 
 test_that("Error 02 if replace_missing_end_date is not a date", {
@@ -61,7 +61,7 @@ test_that("Error 05 if want to calculate overlap with only one category", {
   test_error_type(overlap = T, error_include = "Error 05", category = "op_meaning",
                   dataset = test_data[test_data$op_meaning == "a", ])
   test_error_type_3(overlap = T, error_include = "Error 05", category = "category",
-                  dataset = test_data_3[test_data_3$category == "a", ])
+                  dataset = test_data_special_names[test_data_special_names$category == "a", ])
   expect_no_error_with_defaults(overlap = T, category = "op_meaning")
   expect_no_error_with_defaults_3(overlap = T, category = "category")
 
@@ -69,7 +69,7 @@ test_that("Error 05 if want to calculate overlap with only one category", {
                   dataset = test_data[test_data$op_meaning == "a", ])
 
   test_error_type_3(only_overlaps = T, error_include = "Error 05", category = "category",
-                  dataset = test_data_3[test_data_3$category == "a", ])
+                  dataset = test_data_special_names[test_data_special_names$category == "a", ])
   expect_no_error_with_defaults(only_overlaps = T, category = "op_meaning")
   expect_no_error_with_defaults_3(only_overlaps = T, category = "category")
 })
@@ -176,25 +176,25 @@ test_that("Error 01 if specified column name is not in dataset", {
 })
 
 test_that("Error 02 if some start dates are missing", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_start_date"] <- NA
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 02")
 })
 
 test_that("Error 02 if some start dates are missing", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_start_date"] <- NA
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 02")
 })
 
 test_that("Error 03 if some end dates are missing", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_end_date"] <- NA
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 03")
 })
 
 test_that("Error 04 if some start dates are not interpretable as dates", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp$op_start_date <- as.integer(test_data_tmp$op_start_date)
   test_data_tmp[1, "op_start_date"] <- 123456
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 04")
@@ -218,7 +218,7 @@ test_that("Error 04 if some start dates are not interpretable as dates", {
 })
 
 test_that("Error 05 if some end dates are not interpretable as dates", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp$op_end_date <- as.integer(test_data_tmp$op_end_date)
   test_data_tmp[1, "op_end_date"] <- 123456
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 05")
@@ -242,14 +242,14 @@ test_that("Error 05 if some end dates are not interpretable as dates", {
 })
 
 test_that("Error 06 if some start dates are after their respective end dates", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp[1, "op_start_date"] <- "20200101"
   test_data_tmp[1, "op_end_date"] <- "20100101"
   test_error_type_2(dataset = test_data_tmp, error_include = "Error 06")
 })
 
 test_that("Error 07 if a person has overlapping periods within categories", {
-  test_data_tmp <- test_data_2
+  test_data_tmp <- test_data_overlap
   test_data_tmp[1, "person_id"] <- "a2"
   test_data_tmp[1, "op_start_date"] <- "20110101"
   test_data_tmp[1, "op_end_date"] <- "20210101"
