@@ -19,7 +19,8 @@
 
 
 CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
-                         overlap = F, dataset_overlap = "df_overlap", only_overlaps = F, gap_allowed = 1){
+                         overlap = F, dataset_overlap = "df_overlap", only_overlaps = F, gap_allowed = 1,
+                         birth_date = NULL, gap_allowed_birth = 1){
 
   ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
@@ -29,6 +30,7 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
 
     dataset <- data_preparation(dataset, start_date, end_date, replace_missing_end_date)
     dataset <- data_preparation_2(dataset, category)
+    dataset <- data_preparation_3(dataset, birth_date, gap_allowed_birth)
 
     dataset <- CreateSpells.internal(dataset, id, start_date, end_date, category, gap_allowed)
     assign("output_spells_category", dataset)

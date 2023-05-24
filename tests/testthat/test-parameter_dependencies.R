@@ -138,6 +138,17 @@ test_that("Error 08 some start dates are not dates or ymd format", {
 })
 
 test_that("Error 09 some end dates are not dates or ymd format", {
+  test_error_type(dataset = tibble::tribble(~person_id, ~op_start_date, ~op_end_date, ~op_meaning,
+                                            "a",   "20200101",   "2020010112",         "a"), error_include = "Error 09")
+  test_error_type(dataset = tibble::tribble(~person_id, ~op_start_date, ~op_end_date, ~op_meaning,
+                                            "a",     20200101,     2020010112,         "a"), error_include = "Error 09")
+  test_error_type_special_names(dataset = tibble::tribble(~id, ~start_date, ~end_date, ~category,
+                                                          "a","20200101","2020010112",       "a"), error_include = "Error 09")
+  test_error_type_special_names(dataset = tibble::tribble(~id, ~start_date, ~end_date, ~category,
+                                                          "a",  20200101,  2020010112,       "a"), error_include = "Error 09")
+})
+
+test_that("Error 10 some end dates are before start dates", {
   test_error_type(dataset = row_wise_dt(~person_id, ~op_start_date, ~op_end_date, ~op_meaning,
                                         "a",     "20100101",   "20200101",         "a",
                                         "a",     "20200101",   "20100101",         "a"), error_include = "Error 10")
@@ -148,6 +159,73 @@ test_that("Error 09 some end dates are not dates or ymd format", {
                                                       "a",     "20200101",   "20200101",         "a"))
   expect_no_error_with_defaults_special_names(dataset = row_wise_dt(~id, ~start_date, ~end_date, ~category,
                                                         "a",  "20200101","20200101",       "a"))
+})
+
+test_that("Error 11 some birth dates are missing", {
+  test_error_type(dataset = row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning, ~date_of_birth,
+                                        "a",     "20100101",    "20200101",         "a", "20100101",
+                                        "a",     "20110101",    "20200101",         "a", NA),
+                  birth_date = "date_of_birth", error_include = "Error 11")
+  test_error_type(dataset = row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning, ~date_of_birth,
+                                        "a",       20100101,      20200101,         "a", 20100101,
+                                        "a",       20110101,      20200101,         "a", NA),
+                  birth_date = "date_of_birth", error_include = "Error 11")
+  test_error_type_special_names(dataset = row_wise_dt(~id, ~start_date,  ~end_date, ~category, ~birth_date,
+                                                      "a",    "20100101", "20200101",       "a", "20100101",
+                                                      "a",    "20110101", "20200101",       "a", NA),
+                                birth_date = "birth_date", error_include = "Error 11")
+  test_error_type_special_names(dataset = row_wise_dt(~id, ~start_date,  ~end_date, ~category, ~birth_date,
+                                                      "a",      20100101,   20200101,       "a", 20100101,
+                                                      "a",      20110101,   20200101,       "a", NA),
+                                birth_date = "birth_date", error_include = "Error 11")
+  expect_no_error_with_defaults(dataset = row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning, ~date_of_birth,
+                                                      "a",     "20100101",    "20200101",         "a", "20100101",
+                                                      "a",     "20110101",    "20200101",         "a", "20090101"),
+                                birth_date = "date_of_birth")
+  expect_no_error_with_defaults(dataset = row_wise_dt(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning, ~date_of_birth,
+                                                      "a",       20100101,      20200101,         "a", 20100101,
+                                                      "a",       20110101,      20200101,         "a", 20090101),
+                                birth_date = "date_of_birth")
+  expect_no_error_with_defaults_special_names(dataset = row_wise_dt(~id, ~start_date,  ~end_date, ~category, ~birth_date,
+                                                                    "a",    "20100101", "20200101",       "a", "20100101",
+                                                                    "a",    "20110101", "20200101",       "a", "20090101"),
+                                              birth_date = "birth_date")
+  expect_no_error_with_defaults_special_names(dataset = row_wise_dt(~id, ~start_date,  ~end_date, ~category, ~birth_date,
+                                                                    "a",      20100101,   20200101,       "a", 20100101,
+                                                                    "a",      20110101,   20200101,       "a", 20090101),
+                                              birth_date = "birth_date")
+})
+
+test_that("Error 12 some birth dates are not dates or ymd format", {
+  test_error_type(dataset = tibble::tribble(~person_id, ~op_start_date, ~op_end_date, ~op_meaning, ~date_of_birth,
+                                            "a",   "20200101",   "20250101",         "a",   "2020010112"),
+                  birth_date = "date_of_birth", error_include = "Error 12")
+  test_error_type(dataset = tibble::tribble(~person_id, ~op_start_date, ~op_end_date, ~op_meaning, ~date_of_birth,
+                                            "a",     20200101,     20250101,         "a",   2020010112),
+                  birth_date = "date_of_birth", error_include = "Error 12")
+  test_error_type_special_names(dataset = tibble::tribble(~id, ~start_date, ~end_date, ~category, ~birth_date,
+                                                          "a","20200101","20250101",       "a",   "2020010112"),
+                                birth_date = "birth_date", error_include = "Error 12")
+  test_error_type_special_names(dataset = tibble::tribble(~id, ~start_date, ~end_date, ~category, ~birth_date,
+                                                          "a",  20200101,  20250101,       "a",   2020010112),
+                                birth_date = "birth_date", error_include = "Error 12")
+})
+
+test_that("Error 13 some start dates are before birth dates", {
+  test_error_type(dataset = row_wise_dt(~person_id, ~op_start_date, ~op_end_date, ~op_meaning, ~date_of_birth,
+                                        "a",     "20100101",   "20200101",         "a", "20150101",
+                                        "a",     "20200101",   "20200101",         "a", "20150101"),
+                  birth_date = "date_of_birth", error_include = "Error 13")
+  test_error_type_special_names(dataset = row_wise_dt(~id, ~start_date, ~end_date, ~category, ~birth_date,
+                                                      "a",  "20100101","20200101",       "a", "20150101",
+                                                      "a",  "20200101","20200101",       "a", "20150101"),
+                                birth_date = "birth_date", error_include = "Error 13")
+  expect_no_error_with_defaults(dataset = row_wise_dt(~person_id, ~op_start_date, ~op_end_date, ~op_meaning, ~date_of_birth,
+                                                      "a",     "20200101",   "20200101",         "a", "20200101"),
+                                birth_date = "date_of_birth")
+  expect_no_error_with_defaults_special_names(dataset = row_wise_dt(~id, ~start_date, ~end_date, ~category, ~birth_date,
+                                                                    "a",  "20200101","20200101",       "a", "20200101"),
+                                              birth_date = "birth_date")
 })
 
 

@@ -65,6 +65,15 @@ data_preparation_2 <- function(dataset, category) {
   return(dataset)
 }
 
+data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birth) {
+
+  prev_env <- environment(NULL)
+  dataset[!lubridate::is.Date(get(prev_env$birth_date)), (birth_date) := lubridate::ymd(get(..birth_date))]
+  dataset[get(prev_env$start_date) - gap_allowed_birth <= get(prev_env$birth_date), (start_date) := birth_date]
+
+  return(dataset)
+}
+
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   sanitize_inputs_overlap(dataset, id, start_date, end_date, category)

@@ -1,5 +1,6 @@
 sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
-                                  overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1) {
+                                  overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1,
+                            birth_date = NULL, gap_allowed_birth = 1) {
 
   . <- NULL
 
@@ -50,7 +51,9 @@ sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, 
     overlap = logical(1L) && token_exist_categories && token_n_categories,
     only_overlaps = logical(1L) && token_exist_categories && token_n_categories,
     dataset_overlap = character(1L) && token_overlap,
-    gap_allowed = integer(1L)
+    gap_allowed = integer(1L),
+    birth_date = NULL || character(1L) && token_col,
+    gap_allowed_birth = integer(1L),
   )
 
   # Check if there are any missing dates
@@ -75,8 +78,30 @@ sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, 
   token_impossible_period <- vetr::vet_token(all(.[[start_date]] <= .[[end_date]], na.rm = T),
                                              paste("Inside %s, there are observation period/s with",
                                                    deparse(substitute(start_date)),
-                                                   "less than", deparse(substitute(end_date)), " (Error 10)"))
+                                                   "less than", deparse(substitute(end_date)), "(Error 10)"))
   vetr::vet(token_impossible_period, dataset, stop = T)
+
+  # Check if there are any missing dates
+  if (!is.null(birth_date)) {
+    token_missing_start_dates <- vetr::vet_token(!is.na(.[[birth_date]]),
+                                                 "Some birth dates of %s are missing, please update those values or
+                                               deleted the records (Error 11)")
+    vetr::vet(token_missing_start_dates, dataset, stop = T)
+
+    # Check if x is/can be a date
+    token_is_ymd_or_end_date <- vetr::vet_token(is.ymd_or_date(.[[birth_date]]),
+                                                "All birth dates in %s should be a date or string/integer
+                                          interpretable by lubridate::ymd (Error 12)")
+    vetr::vet(token_is_ymd_or_end_date, dataset, stop = T)
+
+    # Check for periods with end date before start date
+    token_period_before_birth <- vetr::vet_token(all(.[[birth_date]] <= .[[start_date]]),
+                                               paste("Inside %s, there are observation period/s with",
+                                                     deparse(substitute(birth_date)),
+                                                     "before", deparse(substitute(start_date)), "(Error 13)"))
+    vetr::vet(token_period_before_birth, dataset, stop = T)
+  }
+
 
   return()
 }
