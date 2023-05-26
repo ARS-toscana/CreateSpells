@@ -25,10 +25,10 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
   ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
   pass_all_arguments("sanitize_inputs")
+  dataset <- data_preparation(dataset, start_date, end_date, replace_missing_end_date)
 
   if (!only_overlaps) {
 
-    dataset <- data_preparation(dataset, start_date, end_date, replace_missing_end_date)
     dataset <- data_preparation_2(dataset, category)
     dataset <- data_preparation_3(dataset, birth_date, gap_allowed_birth)
 
