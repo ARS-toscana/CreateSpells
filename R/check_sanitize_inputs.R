@@ -6,9 +6,13 @@ sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, 
 
   # Function to check if x is a date or is an input that ymd() can accept
   is.ymd_or_date <- function(x) {
-    x <- tryCatch(lubridate::ymd(x[!is.na(x)]), error=function(e) F, warning=function(w) F)
-    if (all(lubridate::is.Date(x))) x <- T
-    return(x)
+    if (!inherits(x, 'Date')) {
+      y <- tryCatch(lubridate::ymd(x), error=function(e) F, warning=function(w) F)
+    } else {
+      return(T)
+    }
+    if (!isFALSE(y)) y <- T
+    return(y)
   }
 
   # Check if there are any missing dates
