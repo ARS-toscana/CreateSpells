@@ -1,3 +1,5 @@
+# This is general test data
+
 create_test_df <- function() {
   temp_df <- tibble::tribble(
     ~person_id, ~op_start_date,~op_end_date,~op_meaning,           ~to_use_comment,
@@ -30,12 +32,14 @@ create_test_df <- function() {
   return(temp_df)
 }
 
+# Used in the overlap part
 test_data <- create_test_df()
 test_data_overlap <- test_data[!is.na(test_data$op_end_date) &
                                  test_data$to_use_comment %in% c("single", "partial overlap", "disjoint", "exist,
                                                                  complete overlap", "exist, between disjoint",
                                                                  "not exist in a or b"), ]
 
+# Same as the two above but with column names same as argument name inside the function
 test_data_special_names <- data.table::copy(test_data)
 data.table::setnames(test_data_special_names, c("person_id", "op_start_date", "op_end_date", "op_meaning"),
                      c("id", "start_date", "end_date", "category"))
