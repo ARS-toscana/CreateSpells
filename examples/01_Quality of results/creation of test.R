@@ -31,18 +31,6 @@ create_test_df <- function() {
   return(data.table::as.data.table(temp_df))
 }
 
-# df_spells_calculated <- CreateSpellsV13(
-#   dataset = initial_df,
-#   id = "person_id",
-#   start_date = "op_start_date",
-#   end_date = "op_end_date",
-#   category ="op_meaning",
-#   replace_missing_end_date = lubridate::ymd(20250101),
-#   gap_allowed = 1,
-#   overlap = T,
-#   dataset_overlap = "df_overlap_calculated"
-# )
-
 create_df_spells <- function() {
   temp_df <- tibble::tribble(
     ~id,~op_meaning,~num_spell,~entry_spell_category,~exit_spell_category,

@@ -125,6 +125,7 @@ sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category,
     dataset[, (end_date) := data.table::shift(get(..end_date)), by = c(id, category)]
     dataset[, (end_date) := get(..end_date) + gap_allowed]
 
+
     prev_env <- environment(NULL)
     return(nrow(dataset[!is.na(get(prev_env$end_date)) & get(prev_env$start_date) <= get(prev_env$end_date)]) == 0)
   }

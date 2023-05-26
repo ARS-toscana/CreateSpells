@@ -6,9 +6,9 @@ pass_all_arguments <- function(x) {
 
 data_preparation <- function(dataset, start_date, end_date, replace_missing_end_date) {
 
-  prev_env <- environment(NULL)
-  dataset[!lubridate::is.Date(get(prev_env$start_date)), (start_date) := lubridate::ymd(get(..start_date))]
-  dataset[!lubridate::is.Date(get(prev_env$end_date)), (end_date) := lubridate::ymd(get(..end_date))]
+  if (!inherits(dataset$start_date, 'Date')) dataset[, (start_date) := lubridate::ymd(get(..start_date))]
+  if (!inherits(dataset$end_date, 'Date')) dataset[, (end_date) := lubridate::ymd(get(..end_date))]
+
   if (any(is.na(dataset[[end_date]]))) {
 
     message("Some end dates are missing")
@@ -67,8 +67,7 @@ data_preparation_2 <- function(dataset, category) {
 
 data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birth) {
 
-  prev_env <- environment(NULL)
-  dataset[!lubridate::is.Date(get(prev_env$birth_date)), (birth_date) := lubridate::ymd(get(..birth_date))]
+  if (!inherits(dataset$birth_date, 'Date')) dataset[, (birth_date) := lubridate::ymd(get(..birth_date))]
   dataset[get(prev_env$start_date) - gap_allowed_birth <= get(prev_env$birth_date), (start_date) := birth_date]
 
   return(dataset)

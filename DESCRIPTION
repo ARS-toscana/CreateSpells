@@ -19,8 +19,7 @@ Imports:
     vetr,
     utils,
     lubridate,
-    data.table,
-    tibble
+    data.table
 Suggests: 
     testthat (>= 3.0.0),
     tibble
