@@ -18,7 +18,7 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
     if (is.null(replace_missing_end_date)){
 
       warning("Since parameter 'replace_missing_end_date' has not been specified,
-              those periods have been removed from computation of spells  (Warning 01)")
+              those periods have been removed from computation of spells (Warning 01)")
       prev_env <- environment(NULL)
       dataset <- dataset[!is.na(get(prev_env$end_date)), ]
 
@@ -61,57 +61,56 @@ data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birt
 # Internal function for calculating overlaps
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  dataset <- dataset[get("category") != "_overall",]
+  data.table::setnames(dataset, c(start_date, end_date, category),
+                       c("entry_spell_category", "exit_spell_category", "category"))
+
+  start_date <- "entry_spell_category"
+  end_date <- "exit_spell_category"
+  category <- "category"
 
   # Create list of unique not missing categories
-  unique_cat <- as.list(unique(dataset[[category]]))
-  unique_cat <- unique_cat[!is.na(unique_cat)]
+  unique_cat <- unique(dataset[!is.na(category), category])
 
   # Create the combinations of pairs of categories
-  permut <- t(utils::combn(unique_cat, 2))
+  permut <- utils::combn(unique_cat, 2, simplify = F)
 
   export_df <- list()
 
   # Cycle for each pair
-  for (i in seq_len(nrow(permut))) {
+  for (i in permut) {
 
-    p_1 <- permut[i, 1]
-    p_2 <- permut[i, 2]
-
-    ens_1 <- paste0("entry_spell_category_", p_1)
-    exs_1 <- paste0("exit_spell_category_", p_1)
-    ens_2 <- paste0("entry_spell_category_", p_2)
-    exs_2 <- paste0("exit_spell_category_", p_2)
+    p_1 <- i[1]
+    p_2 <- i[2]
 
     #	For each pair of values A and B, create two temporary datasets
-    to_drop <- c(category)
-    if ("num_spell" %in% colnames(dataset)) to_drop <- c("num_spell", to_drop)
+    to_keep_start <- c(id, start_date, end_date, category)
+    to_keep_end <- c(id, start_date, end_date)
+    dataset <- dataset[, ..to_keep_start]
 
-    outputA <- dataset[get("category") == p_1, ][, (to_drop) := NULL]
-    data.table::setnames(outputA, c(start_date, end_date), c(ens_1, exs_1))
+    dataset_filtered_1 <- data.table::copy(dataset)[get("category") == p_1][, ..to_keep_end]
+    dataset_filtered_2 <- dataset[get("category") == p_2][, ..to_keep_end]
 
-    outputB <- dataset[get("category") == p_2, ][, (to_drop) := NULL]
-    data.table::setnames(outputB, c(start_date, end_date), c(ens_2, exs_2))
+    data.table::setkeyv(dataset_filtered_2, to_keep_end)
+    dataset_filtered_1 <- data.table::foverlaps(dataset_filtered_1, dataset_filtered_2, nomatch = NULL)
+    rm(dataset_filtered_2)
 
-    #	Perform a join multi-to-multi of the two datasets
-    CAT <- merge(outputA, outputB, by = c(id), all = T, allow.cartesian = T)
-    CAT <- CAT[(get(ens_1) <= get(exs_2) + gap_allowed & get(exs_1) + gap_allowed >= get(ens_2)) | (get(ens_2) <= get(exs_1) + gap_allowed & get(exs_2) + gap_allowed >= get(ens_1)), ]
+    foverlaps_start <- paste0("i.", start_date)
+    foverlaps_end <- paste0("i.", end_date)
 
-    #	If no overlap go to next pair
-    if (nrow(CAT) == 0) next
+    dataset_filtered_1[, (start_date) := pmax(get(start_date), get(foverlaps_start))]
+    dataset_filtered_1[, (end_date) := pmin(get(end_date), get(foverlaps_end))]
 
-    # Calculate overlapping spells between categories
-    CAT <- CAT[, .(id, entry_spell_category = pmax(get(ens_1), get(ens_2)),
-                   exit_spell_category = pmin(get(exs_1), get(exs_2)))]
-    CAT <- CAT[, (category) := paste(p_1, p_2, sep = "_")]
+    dataset_filtered <- dataset_filtered_1[, ..to_keep_end]
+    rm(dataset_filtered_1)
 
-    select_col <- c(id, "entry_spell_category", "exit_spell_category", category)
-    data.table::setorderv(CAT, c(get(id), "entry_spell_category", "exit_spell_category"))
-    CAT <- CAT[, select_col, with = FALSE]
+    dataset_filtered <- dataset_filtered[, (category) := paste(p_1, p_2, sep = "_")]
 
-    CAT <- CAT[, num_spell := data.table::rowid(get(..id))]
+    select_col <- c(id, start_date, end_date, category)
+    dataset_filtered <- dataset_filtered[, ..select_col]
 
-    export_df <- append(export_df, list(CAT))
+    dataset_filtered <- dataset_filtered[, num_spell := data.table::rowid(get(..id))]
+
+    export_df <- append(export_df, list(dataset_filtered))
   }
 
   export_df <- data.table::rbindlist(export_df)
