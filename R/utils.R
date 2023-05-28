@@ -8,6 +8,8 @@ pass_all_arguments <- function(x) {
 # General preparation of the data
 data_preparation <- function(dataset, start_date, end_date, replace_missing_end_date) {
 
+  ..start_date <- ..end_date <- "Shut up!"
+
   if (!inherits(dataset$start_date, 'Date')) dataset[, (start_date) := lubridate::ymd(get(..start_date))]
   if (!inherits(dataset$end_date, 'Date')) dataset[, (end_date) := lubridate::ymd(get(..end_date))]
 
@@ -52,6 +54,8 @@ data_preparation_2 <- function(dataset, category) {
 #Preparation for overlaps
 data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birth) {
 
+  ..birth_date <- prev_env <- "Shut up!"
+
   if (!inherits(dataset$birth_date, 'Date')) dataset[, (birth_date) := lubridate::ymd(get(..birth_date))]
   dataset[get(prev_env$start_date) - gap_allowed_birth <= get(prev_env$birth_date), (start_date) := birth_date]
 
@@ -60,6 +64,8 @@ data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birt
 
 # Internal function for calculating overlaps
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+
+  ..to_keep_start <- ..to_keep_end <- ..select_col <- num_spell <- ..id <- "Shut up!"
 
   data.table::setnames(dataset, c(start_date, end_date, category),
                        c("entry_spell_category", "exit_spell_category", "category"))
@@ -121,6 +127,8 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
 
 # Internal function for calculating the spells
 CreateSpells.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
+
+  row_id <- .N <- lag_end_date <- ..end_date <- num_spell <- ..start_date <- . <- "Shut up!"
 
   if(is.null(category)){
     order_vec <- c(id, start_date, end_date)

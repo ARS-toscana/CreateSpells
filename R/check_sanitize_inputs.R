@@ -2,7 +2,7 @@ sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, 
                                   overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1,
                             birth_date = NULL, gap_allowed_birth = 1) {
 
-  . <- NULL
+  . <- "Shut up!"
 
   # Function to check if x is a date or is an input that ymd() can accept
   is.ymd_or_date <- function(x) {
@@ -113,7 +113,7 @@ sanitize_inputs <- function(dataset, id, start_date, end_date, category = NULL, 
 
 sanitize_inputs_overlap <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  . <- NULL
+  ..end_date <- ..start_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
   # Function to check if x is a date or is an input that ymd() can accept
   is.ymd_or_date <- function(x) {
