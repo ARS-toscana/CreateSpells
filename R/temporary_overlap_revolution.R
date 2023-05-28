@@ -1,7 +1,5 @@
 overlap.internal_2 <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
-  dataset <- sanitize_inputs_overlap(dataset, id, start_date, end_date, category, gap_allowed)
-
   data.table::setnames(dataset, c(start_date, end_date, category),
                        c("entry_spell_category", "exit_spell_category", "category"))
 

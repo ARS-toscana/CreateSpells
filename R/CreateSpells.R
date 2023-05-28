@@ -15,7 +15,7 @@
 #' @param gap_allowed (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
 #' @importFrom data.table :=
 
-# NOTE: Developed under R  4.2.3
+# NOTE: Developed under R  4.3.0
 
 
 CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
@@ -39,6 +39,8 @@ CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, rep
   #OPTIONAL SECTION REGARDING OVERLAPS
 
   if(overlap || only_overlaps){
+    dataset <- sanitize_inputs_overlap(dataset, id, start_date, end_date, category, gap_allowed)
+
     export_df <- overlap.internal(dataset, id, start_date, end_date, category, gap_allowed)
     assign(dataset_overlap, export_df, envir = parent.frame())
   }
