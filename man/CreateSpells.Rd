@@ -14,7 +14,9 @@ CreateSpells(
   overlap = F,
   dataset_overlap = "df_overlap",
   only_overlaps = F,
-  gap_allowed = 1
+  gap_allowed = 1,
+  birth_date = NULL,
+  gap_allowed_birth = 1
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ CreateSpells(
 \item{only_overlaps}{(optional) if only_overlaps TRUE, skip the calculation the spells}
 
 \item{gap_allowed}{(optional) Allowed gap in days between two observation periods after which they are counted as a different spell}
+
+\item{birth_date}{(optional) variable containing the date of birth (the date must me ordered as Year Month Day)}
+
+\item{gap_allowed_birth}{(optional) Allowed gap in days between start date of spell and birth date otherwise start date will be converted to birth date}
 }
 \description{
 CreateSpells takes as input a dataset with multiple time windows per unit of observation. Multiple categories of time windows may be recorded per unit, and time windows of the same unit may overlap, even within the same category. The purpose of the function is creating a dataset where the time windows of the each person and category are disjoint (a time window which is disjoint form the others is called spell). Additionally, a category  '_overall' is added, where time windows are processed regardless of their category. As an option, overlap of pairs of categories are also processed: each pair will be associated to spells where both values are recorded.

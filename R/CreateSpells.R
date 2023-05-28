@@ -13,6 +13,8 @@
 #' @param dataset_overlap (optional) if overlap TRUE, the name of the file containing the overlap dataset
 #' @param only_overlaps (optional) if only_overlaps TRUE, skip the calculation the spells
 #' @param gap_allowed (optional) Allowed gap in days between two observation periods after which they are counted as a different spell
+#' @param birth_date (optional) variable containing the date of birth (the date must me ordered as Year Month Day)
+#' @param gap_allowed_birth (optional) Allowed gap in days between start date of spell and birth date otherwise start date will be converted to birth date
 #' @importFrom data.table :=
 
 # NOTE: Developed under R  4.3.0
@@ -21,8 +23,6 @@
 CreateSpells <- function(dataset, id, start_date, end_date, category = NULL, replace_missing_end_date = NULL,
                          overlap = F, dataset_overlap = "df_overlap", only_overlaps = F, gap_allowed = 1,
                          birth_date = NULL, gap_allowed_birth = 1){
-
-  ..start_date <- ..end_date <- row_id <- .N <- lag_end_date <- num_spell <- ..id <- . <- "Shut up!"
 
   pass_all_arguments("sanitize_inputs")
   dataset <- data_preparation(dataset, start_date, end_date, replace_missing_end_date)
