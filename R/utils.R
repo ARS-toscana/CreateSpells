@@ -16,40 +16,21 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
     message("Some end dates are missing")
 
     if (is.null(replace_missing_end_date)){
+
       warning("Since parameter 'replace_missing_end_date' has not been specified,
               those periods have been removed from computation of spells  (Warning 01)")
       prev_env <- environment(NULL)
       dataset <- dataset[!is.na(get(prev_env$end_date)), ]
 
-      # nrow_before <- nrow(dataset)
-      # dataset <- dataset[get(start_date) <= get(end_date)]
-      # nrow_after <- nrow(dataset)
-      # if(nrow_before != nrow_after) {
-      #   warning("Some start dates are after their respective end dates.
-      #               Those periods have been removed from computation of spells")
-      # }
-
     } else {
+
       replace_missing_end_date <- lubridate::ymd(replace_missing_end_date)
-      message(paste("Replacing missing end date/s with", replace_missing_end_date))
+      message(paste("Replacing missing end date/s with", replace_missing_end_date, "and removing all periods with start > end"))
 
       prev_env <- environment(NULL)
       dataset[is.na(get(prev_env$end_date)), (end_date) := replace_missing_end_date]
       dataset <- dataset[get(prev_env$start_date) <= get(prev_env$end_date)]
-      # dataset_missing <- dataset[is.na(get(end_date))][, (end_date) := replace_missing_end_date]
-      # dataset <- dataset[!is.na(get(end_date))]
-      #
-      # nrow_before <- nrow(dataset)
-      # dataset <- dataset[get(start_date) <= get(end_date)]
-      # nrow_after <- nrow(dataset)
-      # if(nrow_before != nrow_after) {
-      #   warning("Some start dates are after their respective end dates.
-      #               Those periods have been removed from computation of spells")
-      # }
-      #
-      # dataset_missing <- dataset_missing[get(start_date) <= get(end_date)]
-      #
-      # dataset <- rbindlist(list(dataset_missing, dataset))
+
     }
   }
 
@@ -79,8 +60,6 @@ data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birt
 
 # Internal function for calculating overlaps
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
-
-  sanitize_inputs_overlap(dataset, id, start_date, end_date, category)
 
   dataset <- dataset[get("category") != "_overall",]
 
