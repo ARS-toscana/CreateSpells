@@ -1,3 +1,10 @@
+##%######################################################%##
+#                                                          #
+####             Tests for overlap.internal             ####
+#                                                          #
+##%######################################################%##
+
+
 test_that("double overlap", {
   expect_identical(test_overlap.internal(~person_id, ~op_start_date,  ~op_end_date, ~op_meaning,
                                          "a",  "20100101", "20190101",       "a",

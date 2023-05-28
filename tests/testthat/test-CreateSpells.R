@@ -1,3 +1,9 @@
+##%######################################################%##
+#                                                          #
+####          Tests for CreateSpells.internal           ####
+#                                                          #
+##%######################################################%##
+
 test_that("single observation no op_meaning", {
   expect_identical(test_CreateSpells.internal(~person_id, ~op_start_date,  ~op_end_date,
                                               "a",  "20100101", "20200101"),

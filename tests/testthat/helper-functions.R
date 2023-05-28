@@ -1,3 +1,11 @@
+##%######################################################%##
+#                                                          #
+####          sanitize_inputs (expect errors)           ####
+#                                                          #
+##%######################################################%##
+
+
+# Normal
 test_error_type <- function(dataset = test_data, id = "person_id", start_date = "op_start_date",
                             end_date = "op_end_date", category = NULL, replace_missing_end_date = NULL,
                             overlap = F, dataset_overlap = NA_character_, only_overlaps = F, gap_allowed = 1,
@@ -9,6 +17,7 @@ test_error_type <- function(dataset = test_data, id = "person_id", start_date = 
                regexp = error_include)
 }
 
+# Special names
 test_error_type_special_names <- function(dataset = test_data_special_names, id = "id", start_date = "start_date",
                                           end_date = "end_date", category = NULL, replace_missing_end_date = NULL,
                                           overlap = F, dataset_overlap = NA_character_, only_overlaps = F,
@@ -20,6 +29,7 @@ test_error_type_special_names <- function(dataset = test_data_special_names, id 
                regexp = error_include)
 }
 
+# Overlap
 test_error_type_overlap <- function(dataset = test_data_overlap, id = "person_id", start_date = "op_start_date",
                                     end_date = "op_end_date", category = "op_meaning", gap_allowed = 1, error_include) {
   expect_error(sanitize_inputs_overlap(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
@@ -27,6 +37,7 @@ test_error_type_overlap <- function(dataset = test_data_overlap, id = "person_id
                regexp = error_include)
 }
 
+# Overlap special names
 test_error_type_overlap_special_names <- function(dataset = test_data_overlap_special_names, id = "id",
                                                   start_date = "start_date", end_date = "end_date",
                                                   category = "category", gap_allowed = 1, error_include) {
@@ -35,6 +46,13 @@ test_error_type_overlap_special_names <- function(dataset = test_data_overlap_sp
                regexp = error_include)
 }
 
+##%######################################################%##
+#                                                          #
+####            sanitize_inputs (no errors)             ####
+#                                                          #
+##%######################################################%##
+
+# Normal
 expect_no_error_with_defaults <- function(dataset = test_data, id = "person_id", start_date = "op_start_date",
                                           end_date = "op_end_date", category = NULL, replace_missing_end_date = NULL,
                                           overlap = F, dataset_overlap = NA_character_, only_overlaps = F,
@@ -45,6 +63,7 @@ expect_no_error_with_defaults <- function(dataset = test_data, id = "person_id",
                                   gap_allowed = gap_allowed, birth_date = birth_date, gap_allowed_birth = gap_allowed_birth))
 }
 
+# Special names
 expect_no_error_with_defaults_special_names <- function(dataset = test_data_special_names, id = "id",
                                                         start_date = "start_date", end_date = "end_date",
                                                         category = NULL, replace_missing_end_date = NULL, overlap = F,
@@ -56,6 +75,7 @@ expect_no_error_with_defaults_special_names <- function(dataset = test_data_spec
                                   gap_allowed = gap_allowed, birth_date = birth_date, gap_allowed_birth = gap_allowed_birth))
 }
 
+# Overlap
 expect_no_error_with_defaults_overlap <- function(dataset = test_data_overlap, id = "person_id",
                                                   start_date = "op_start_date", end_date = "op_end_date",
                                                   category = "op_meaning", gap_allowed = 1) {
@@ -63,12 +83,20 @@ expect_no_error_with_defaults_overlap <- function(dataset = test_data_overlap, i
                                           category = category, gap_allowed = gap_allowed))
 }
 
+# Overlap special names
 expect_no_error_with_defaults_overlap_special_names <- function(dataset = test_data_overlap_special_names, id = "id",
                                                                 start_date = "start_date", end_date = "end_date",
                                                                 category = "category", gap_allowed = 1) {
   expect_no_error(sanitize_inputs_overlap(dataset = dataset, id = id, start_date = start_date, end_date = end_date,
                                           category = category, gap_allowed = gap_allowed))
 }
+
+##%######################################################%##
+#                                                          #
+####               CreateSpells.internal                ####
+#                                                          #
+##%######################################################%##
+
 
 test_CreateSpells.internal <- function(..., id = "person_id", start_date = "op_start_date", end_date = "op_end_date",
                                        category = NULL, gap_allowed = 1) {
@@ -77,6 +105,13 @@ test_CreateSpells.internal <- function(..., id = "person_id", start_date = "op_s
                         category = category, gap_allowed = gap_allowed)
 }
 
+##%######################################################%##
+#                                                          #
+####                  overlap.internal                  ####
+#                                                          #
+##%######################################################%##
+
+
 test_overlap.internal <- function(..., id = "person_id", start_date = "op_start_date", end_date = "op_end_date",
                                   category = "op_meaning", gap_allowed = 1) {
   dataset <- row_wise_dt(...)
@@ -84,6 +119,13 @@ test_overlap.internal <- function(..., id = "person_id", start_date = "op_start_
                      category = category, gap_allowed = gap_allowed)
 }
 
+##%######################################################%##
+#                                                          #
+####                  data_preparation                  ####
+#                                                          #
+##%######################################################%##
+
+# Normal
 test_data_preparation <- function(..., start_date = "op_start_date", end_date = "op_end_date",
                                   replace_missing_end_date = NULL) {
   dataset <- data.table::as.data.table(tibble::tribble(...))
@@ -91,6 +133,7 @@ test_data_preparation <- function(..., start_date = "op_start_date", end_date = 
                    replace_missing_end_date = replace_missing_end_date)
 }
 
+# Special names
 test_data_preparation_special_names <- function(..., start_date = "start_date", end_date = "end_date",
                                                 replace_missing_end_date = NULL) {
   dataset <- data.table::as.data.table(tibble::tribble(...))
@@ -98,6 +141,7 @@ test_data_preparation_special_names <- function(..., start_date = "start_date", 
                    replace_missing_end_date = replace_missing_end_date)
 }
 
+# Convert tribble inputs with correct columns format
 row_wise_dt <- function(...) {
   tmp <- data.table::as.data.table(tibble::tribble(...))
 
@@ -117,6 +161,7 @@ row_wise_dt <- function(...) {
   return(tmp)
 }
 
+# In case transforma to special names is needed
 transform_to_special_names <- function(tmp) {
   start_col <- intersect(colnames(tmp), c("entry_spell_category", "op_start_date"))
   data.table::setnames(tmp, start_col, "start_date")

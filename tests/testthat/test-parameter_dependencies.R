@@ -1,3 +1,10 @@
+##%######################################################%##
+#                                                          #
+####             Tests for sanitize_inputs              ####
+#                                                          #
+##%######################################################%##
+
+
 test_that("Error 01 if replace_missing_end_date is missing", {
   test_error_type(replace_missing_end_date = NA, error_include = "Error 01")
   test_error_type_special_names(dataset = test_data_special_names, replace_missing_end_date = NA, error_include = "Error 01")

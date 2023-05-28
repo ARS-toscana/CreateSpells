@@ -1,9 +1,11 @@
+# Pass all argument of a previous the external function to an inner one
 pass_all_arguments <- function(x) {
   mycall <- match.call(sys.function(sys.parent()), sys.call(sys.parent()))
   mycall[[1]] <- as.symbol(x) # use inner 1
   eval(mycall)
 }
 
+# General preparation of the data
 data_preparation <- function(dataset, start_date, end_date, replace_missing_end_date) {
 
   if (!inherits(dataset$start_date, 'Date')) dataset[, (start_date) := lubridate::ymd(get(..start_date))]
@@ -54,6 +56,7 @@ data_preparation <- function(dataset, start_date, end_date, replace_missing_end_
   return(dataset)
 }
 
+# Preparation for the categories
 data_preparation_2 <- function(dataset, category) {
 
   #add level overall if category is given as input and has at least 2 categories
@@ -65,6 +68,7 @@ data_preparation_2 <- function(dataset, category) {
   return(dataset)
 }
 
+#Preparation for overlaps
 data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birth) {
 
   if (!inherits(dataset$birth_date, 'Date')) dataset[, (birth_date) := lubridate::ymd(get(..birth_date))]
@@ -73,6 +77,7 @@ data_preparation_3 <- function(dataset, start_date, birth_date, gap_allowed_birt
   return(dataset)
 }
 
+# Internal function for calculating overlaps
 overlap.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   sanitize_inputs_overlap(dataset, id, start_date, end_date, category)
@@ -136,7 +141,7 @@ overlap.internal <- function(dataset, id, start_date, end_date, category, gap_al
 
 }
 
-
+# Internal function for calculating the spells
 CreateSpells.internal <- function(dataset, id, start_date, end_date, category, gap_allowed) {
 
   if(is.null(category)){
