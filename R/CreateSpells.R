@@ -16,6 +16,7 @@
 #' @param birth_date (optional) variable containing the date of birth (the date must me ordered as Year Month Day)
 #' @param gap_allowed_birth (optional) Allowed gap in days between start date of spell and birth date otherwise start date will be converted to birth date
 #' @importFrom data.table :=
+#' @export CreateSpells
 
 # NOTE: Developed under R  4.3.0
 
