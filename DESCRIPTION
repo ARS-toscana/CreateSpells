@@ -1,6 +1,6 @@
 Package: CreateSpells
 Type: Package
-Title: Create Spells
+Title: Create Spells from Observation Periods
 Version: 0.1.0
 Author: ARS
 Maintainer: The package maintainer <yourself@somewhere.net>
