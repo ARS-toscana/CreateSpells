@@ -2,8 +2,8 @@ Package: CreateSpells
 Type: Package
 Title: Create Spells from Observation Periods
 Version: 0.1.0
-Author: ARS
-Maintainer: The package maintainer <yourself@somewhere.net>
+Authors@R: person("Davide", "Messina", email = "davide.messina@ars.toscana.it",
+  role = c("aut", "cre"))
 Description: CreateSpells takes as input a dataset with multiple time windows per unit of observation.
   Multiple categories of time windows may be recorded per unit, and time windows of the same unit may overlap,
   even within the same category.
