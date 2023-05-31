@@ -1,20 +1,20 @@
-Package: CreateSpells
 Type: Package
+Package: CreateSpells
 Title: Create Spells from Observation Periods
 Version: 0.1.0
-Authors@R: person("Davide", "Messina", email = "davide.messina@ars.toscana.it",
-  role = c("aut", "cre"))
-Description: CreateSpells takes as input a dataset with multiple time windows per unit of observation.
-  Multiple categories of time windows may be recorded per unit, and time windows of the same unit may overlap,
-  even within the same category.
-  The purpose of the function is creating a dataset where the time windows of the each person and category are disjoint
-  (a time window which is disjoint form the others is called spell).
-  Additionally, a category  '_overall' is added, where time windows are processed regardless of their category.
-  As an option, overlap of pairs of categories are also processed: each pair will be associated to spells where both values are recorded.
+Authors@R: 
+    person("Davide", "Messina", , "davide.messina@ars.toscana.it", role = c("aut", "cre"))
+Description: CreateSpells takes as input a dataset with multiple time
+    windows per unit of observation.  Multiple categories of time windows
+    may be recorded per unit, and time windows of the same unit may
+    overlap, even within the same category.  The purpose of the function
+    is creating a dataset where the time windows of the each person and
+    category are disjoint (a time window which is disjoint form the others
+    is called spell).  Additionally, a category '_overall' is added, where
+    time windows are processed regardless of their category.  As an
+    option, overlap of pairs of categories are also processed: each pair
+    will be associated to spells where both values are recorded.
 License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.2.3
 Imports:
     data.table,
     lubridate,
@@ -24,3 +24,6 @@ Suggests:
     testthat (>= 3.0.0),
     tibble
 Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
