@@ -15,6 +15,7 @@ Description: CreateSpells takes as input a dataset with multiple time
     option, overlap of pairs of categories are also processed: each pair
     will be associated to spells where both values are recorded.
 License: MIT + file LICENSE
+URL: https://github.com/ARS-toscana/CreateSpells
 Imports:
     data.table,
     lubridate,
