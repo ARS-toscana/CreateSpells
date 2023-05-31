@@ -16,10 +16,10 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
 Imports:
-    vetr,
-    utils,
+    data.table,
     lubridate,
-    data.table
+    utils,
+    vetr
 Suggests: 
     testthat (>= 3.0.0),
     tibble
